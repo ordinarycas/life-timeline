@@ -26,6 +26,8 @@
   --curve-main: #2d5aa8;
   --curve-base: #1c7c4f;
   --curve-net: #b03a48;
+  --curve-adv: #6a3fb0;
+  --curve-pay: #a35200;
   --past: #626779;
   --past-ink: #ffffff;
   --seg-walked: #d5dce8;
@@ -65,6 +67,8 @@
     --curve-main: #8db9ff;
     --curve-base: #99d8b9;
     --curve-net: #ff9ca6;
+    --curve-adv: #c9b3ff;
+    --curve-pay: #ffb27a;
     --past: #8e96b8;
     --past-ink: #1a1e33;
     --seg-walked: #404869;
@@ -102,6 +106,8 @@
   --curve-main: #8db9ff;
   --curve-base: #99d8b9;
   --curve-net: #ff9ca6;
+  --curve-adv: #c9b3ff;
+  --curve-pay: #ffb27a;
   --past: #8e96b8;
   --past-ink: #1a1e33;
   --seg-walked: #404869;
@@ -477,3 +483,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 8px; }
   .tagcard { box-shadow: none; margin-bottom: 8px; }
   .details-tools { display: none; }
 }
+
+#adv-status.is-bad { color: var(--danger); font-weight: 700; }
+#adv-import { margin: 12px 0; }
+code { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--surface2); padding: 0 4px; }

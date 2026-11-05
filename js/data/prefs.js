@@ -10,7 +10,7 @@ export const PREFS_KEY = 'ltl.prefs.v1';
 export const HINTS_KEY = 'ltl.hints.v1';
 
 export const DEFAULTS = Object.freeze({
-  sex: '', birth: '', have: [], retire: 65, start: 0, kid: false, kidAge: 30,
+  sex: '', birth: '', have: [], retire: 65, start: 0, kid: false, kidAge: 30, useAdv: false,
   wage: 'current', monthly: 0, service: 'auto', serviceAge: 22, serviceType: 'regular', music: 'off', musicUrl: '', theme: 'light',
   assetCash: 0, assetInvest: 0, assetOther: 0, debt: 0, debtInterest: 0, expense: 0,
 });
@@ -52,6 +52,7 @@ export function validateField(key, raw, { todayIso, musicIds = [] } = {}) {
       const n = toInt(raw);
       return n === 0 || inRange(n, 10, 80) ? ok(n) : bad(MSG.start);
     }
+    case 'useAdv': return typeof raw === 'boolean' ? ok(raw) : bad('請選擇是否代入進階資料');
     case 'kid': return typeof raw === 'boolean' ? ok(raw) : bad('請選擇是否有小孩');
     case 'kidAge': { const n = toInt(raw); return inRange(n, 15, 60) ? ok(n) : bad(MSG.kidAge); }
     case 'wage': return ['current', 'proposed', 'custom'].includes(raw) ? ok(raw) : bad('請選擇月薪來源');

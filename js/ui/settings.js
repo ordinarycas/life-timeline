@@ -29,6 +29,7 @@ export function initSettings({ prefs, getToday, onChange, onClear }) {
       $(f[1]).value = p[k] ? String(p[k]) : '';
     }
     for (const id of HAVE_IDS) $(`f-have-${id}`).checked = p.have.includes(id);
+    $('f-use-adv').checked = p.useAdv;
     $('f-kid').checked = p.kid;
     $('f-kid-age').value = String(p.kidAge);
     $('f-service').value = p.service;
@@ -89,6 +90,7 @@ export function initSettings({ prefs, getToday, onChange, onClear }) {
   for (const id of HAVE_IDS) {
     $(`f-have-${id}`).addEventListener('change', () => commit('have', HAVE_IDS.filter((x) => $(`f-have-${x}`).checked)));
   }
+  $('f-use-adv').addEventListener('change', () => commit('useAdv', $('f-use-adv').checked));
   $('f-kid').addEventListener('change', () => commit('kid', $('f-kid').checked));
   $('settings-form').addEventListener('submit', (e) => e.preventDefault());
 

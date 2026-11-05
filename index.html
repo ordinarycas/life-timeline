@@ -23,6 +23,7 @@
 <header class="top no-print">
   <div class="brand"><span class="brand-mark" id="brand-mark" aria-hidden="true"></span><span class="brand-name">LifeTimeline</span><span class="brand-sub">人生時間軸</span></div>
   <div class="top-actions">
+    <a class="btn" href="advanced.html">進階</a>
     <button type="button" id="install-app" class="btn" hidden>安裝 App</button>
     <button type="button" id="print-btn" class="btn">列印</button>
     <button type="button" id="theme-toggle" class="btn" aria-label="切換主題">主題：淺色</button>
@@ -203,6 +204,8 @@
         <div class="field"><label for="f-debt-interest">預估還要付的利息總額（NT$）</label><input type="number" id="f-debt-interest" inputmode="numeric" min="0" step="1" aria-describedby="err-debt-interest"><p class="err" id="err-debt-interest" role="alert" hidden></p></div>
         <div class="field"><label for="f-expense">目前每月固定生活支出（NT$）</label><input type="number" id="f-expense" inputmode="numeric" min="0" step="1" aria-describedby="err-expense"><p class="err" id="err-expense" role="alert" hidden></p></div>
       </div>
+      <div class="field field-check"><input type="checkbox" id="f-use-adv"><label for="f-use-adv">代入「進階」匯入的資料（生活支出月平均、今天起的借款本金與利息，會取代上面手填的借款與支出）</label></div>
+      <p class="hint" id="adv-hint"></p>
       <p class="hint">資產與借款只存在這個瀏覽器，不會傳出去。利息請自己估（例如依還款表加總），本站不假設利率。</p>
     </details>
 
@@ -213,7 +216,7 @@
       <dl class="kpi" id="kpi-money"></dl>
       <p class="note" id="kpi-zero" hidden>月收入是 0，請選擇基本工資或填入自訂金額。</p>
       <figure class="curve" id="curve-fig">
-        <figcaption id="curve-cap">累積收入曲線（月收入固定、不含調薪與通膨；有填每月生活支出時，多一條扣除消費後的虛線）</figcaption>
+        <figcaption id="curve-cap">累積收入曲線（月收入固定、不含調薪與通膨；有填每月生活支出時，多一條扣除消費後的虛線；在「進階」匯入資料後，再多兩條：扣除生活支出與借款利息、扣除生活支出與實際月繳）</figcaption>
         <div class="curve-box" id="curve-box"><canvas id="curve" role="img" aria-label="累積收入曲線"></canvas></div>
         <p class="note" id="curve-empty" hidden>累積收入曲線：目前沒有可畫的收入（月收入為 0 或已過退休年齡）。</p>
         <details class="curve-table" id="curve-table-wrap">

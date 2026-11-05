@@ -19,6 +19,7 @@ import { initSettings } from './ui/settings.js';
 import { renderDetails, jumpToTag, setAllCards } from './ui/details.js';
 import { renderIncome } from './ui/income.js';
 import { initTabs } from './ui/tabs.js';
+import { loadAdvanced, advancedAssetInputs } from './core/advanced.js';
 import { renderCurve, curveTable, setPrintMode, destroyCurve } from './ui/incomecurve.js';
 import { initPlayer } from './ui/player.js';
 import { initHints } from './ui/hints.js';
@@ -97,14 +98,21 @@ function drawResults() {
   }
   // 資產負債：有填任何一項才顯示
   const assetEls = { wrap: $('asset-wrap'), verdict: $('asset-verdict'), kpi: $('asset-kpi'), water: $('water'), table: $('asset-table'), note: $('asset-note') };
-  if (hasAssetInput(prefs)) renderAssets(assetEls, computeAssets({ income: inc.income, lifeMonths: inc.lifeMonths, monthly }, prefs), monthly);
+  // 「代入進階資料」：用匯入的借款本金、利息與生活支出月平均取代手填的借款與支出（資產仍用手填）
+  const adv = loadAdvanced();
+  const useAdv = !!(prefs.useAdv && adv);
+  $('f-use-adv').disabled = !adv;
+  $('adv-hint').textContent = adv ? '' : '還沒有匯入進階資料。到「進階」頁匯入後，這裡就能勾選。';
+  const assetPrefs = useAdv ? { ...prefs, ...advancedAssetInputs(adv, todayTaipei().slice(0, 7)) } : prefs;
+  if (hasAssetInput(assetPrefs)) renderAssets(assetEls, computeAssets({ income: inc.income, lifeMonths: inc.lifeMonths, monthly }, assetPrefs), monthly, useAdv);
   else hideAssets(assetEls);
   // 曲線
   const can = monthly > 0 && inc.stopAge > model.age;
   $('curve-box').hidden = !can; $('curve-table-wrap').hidden = !can; $('curve-empty').hidden = can;
   if (can) {
-    renderCurve($('curve'), kpi.curve).catch(() => { $('curve-empty').hidden = false; $('curve-empty').textContent = '圖表載入失敗，請看下方表格。'; });
-    curveTable($('curve-table'), kpi.curve);
+    const cp = adv ? { ...kpi.curve, adv: { data: adv, todayYm: todayTaipei().slice(0, 7) } } : kpi.curve;
+    renderCurve($('curve'), cp).catch(() => { $('curve-empty').hidden = false; $('curve-empty').textContent = '圖表載入失敗，請看下方表格。'; });
+    curveTable($('curve-table'), cp);
   } else destroyCurve();
 }
 
