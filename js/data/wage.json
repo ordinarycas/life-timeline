@@ -1,0 +1,22 @@
+{
+  "source": {
+    "publisher": "勞動部",
+    "title": "基本工資",
+    "url": "https://www.mol.gov.tw/1607/1632/1633/99195/post",
+    "accessed": "2026-11-05"
+  },
+  "wage": {
+    "current": {
+      "label": "2026 年（現行）",
+      "monthly": 29500,
+      "hourly": 196,
+      "status": "effective"
+    },
+    "proposed": {
+      "label": "2027 年（審議會決議，尚待行政院核定）",
+      "monthly": 30900,
+      "hourly": 205,
+      "status": "proposed"
+    }
+  }
+}

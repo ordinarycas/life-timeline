@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; img-src 'self' data:; font-src https://fonts.gstatic.com; media-src 'self'; frame-src https://www.youtube-nocookie.com; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="給台灣人的人生時間軸：輸入生日、性別與月薪，看學制、兵役、駕照、退休規定等人生階段，以及只領基本工資至少能賺多少。資料只存在你的瀏覽器，可離線使用、可列印。">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f1e9d2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1626" media="(prefers-color-scheme: dark)">
+<title>LifeTimeline｜人生時間軸與薪資收入</title>
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/theme-init.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">跳到主要內容</a>
+<header class="top no-print">
+  <div class="brand"><span class="brand-mark" id="brand-mark" aria-hidden="true"></span><span class="brand-name">LifeTimeline</span><span class="brand-sub">人生時間軸</span></div>
+  <div class="top-actions">
+    <button type="button" id="install-app" class="btn" hidden>安裝 App</button>
+    <button type="button" id="print-btn" class="btn">列印</button>
+    <button type="button" id="theme-toggle" class="btn" aria-label="切換主題">主題：自動</button>
+  </div>
+</header>
+
+<div id="update-banner" class="banner no-print" role="status" hidden>
+  <span>網站已有新版本。按下「立即更新」即可套用（你的資料不會受影響）。</span>
+  <button type="button" id="apply-update" class="btn btn-primary">立即更新</button>
+</div>
+
+<main id="main" tabindex="-1">
+  <!-- 區塊 1：人生時間軸 -->
+  <section id="stage" class="stage" aria-labelledby="stage-title">
+    <div class="stage-top">
+      <h1 id="stage-title" class="stage-title">人生時間軸</h1>
+      <p id="stage-sub" class="stage-sub"></p>
+    </div>
+    <p id="demo-note" class="demo-note" hidden>示範資料：男、30 歲。到下方輸入生日與性別，就會換成你的時間軸。</p>
+    <div id="landscape-hint" class="hint-bar no-print" role="note" hidden>
+      <span>橫向觀看時間軸會更清楚。</span>
+      <button type="button" id="landscape-ok" class="btn">知道了</button>
+    </div>
+    <div class="stage-view">
+    <div class="stage-map" id="stage-map" tabindex="0" role="group" aria-label="人生時間軸">
+      <div class="tl" id="tl">
+        <div class="tl-legend" id="tl-legend"></div>
+        <div class="tl-special" id="tl-special"></div>
+        <div class="tl-mainbar" id="tl-mainbar"></div>
+        <div class="tl-decades" id="tl-decades" aria-hidden="true"></div>
+        <div class="tl-lanes" id="tl-lanes"></div>
+        <div class="tl-tip" id="tl-tip" role="tooltip" hidden></div>
+      </div>
+    </div>
+    <div class="stage-dock">
+      <section class="player no-print" id="player" aria-label="背景音樂"></section>
+      <aside class="infocard" id="infocard" aria-label="資訊卡片" aria-live="polite"></aside>
+    </div>
+    </div>
+  </section>
+  <details class="tl-table-wrap no-print" id="tl-table-wrap">
+    <summary>以表格查看時間軸的數字</summary>
+    <div class="table-wrap"><table class="data-table" id="tl-table"></table></div>
+  </details>
+
+  <section id="chances" class="block" aria-labelledby="chances-title">
+    <h2 id="chances-title" class="block-title">你這個年紀的機會</h2>
+    <p class="lead" id="chances-lead">依你的年紀與已取得的學歷、證照整理：這個年紀有哪些機會，可以累積經驗或技能、進一步賺取收入。這是「可以把握的機會」，不是保證能賺到多少錢。</p>
+    <ul class="chances" id="chances-list"></ul>
+  </section>
+
+  <!-- 區塊 2：使用者設定與結果 -->
+  <section id="settings" class="block" aria-labelledby="settings-title">
+    <h2 id="settings-title" class="block-title">使用者設定與結果</h2>
+    <details class="card" id="settings-card" open>
+      <summary><span class="sum-title">我的設定</span><span class="sum-line" id="settings-summary"></span></summary>
+      <form id="settings-form" autocomplete="off" novalidate>
+        <div class="grid-form">
+          <div class="field">
+            <label for="f-birth">生日</label>
+            <input type="date" id="f-birth" min="1900-01-01" aria-describedby="err-birth">
+            <p class="err" id="err-birth" role="alert" hidden></p>
+          </div>
+          <div class="field">
+            <label for="f-sex">性別（平均餘命與兵役依性別）</label>
+            <select id="f-sex" aria-describedby="err-sex">
+              <option value="">請選擇</option>
+              <option value="male">男</option>
+              <option value="female">女</option>
+            </select>
+            <p class="err" id="err-sex" role="alert" hidden></p>
+          </div>
+          <div class="field">
+            <label for="f-wage">月薪來源</label>
+            <select id="f-wage" aria-describedby="wage-note">
+              <option value="current">基本工資（2026 年現行）NT$29,500</option>
+              <option value="proposed">基本工資（2027 年審議會決議，尚待行政院核定）NT$30,900</option>
+              <option value="custom">自訂</option>
+            </select>
+            <p class="hint" id="wage-note">稅前月薪，以今天的新台幣計。</p>
+          </div>
+          <div class="field">
+            <label for="f-monthly">自訂月薪（NT$，稅前）</label>
+            <input type="number" id="f-monthly" inputmode="numeric" min="0" step="1" aria-describedby="err-monthly">
+            <p class="err" id="err-monthly" role="alert" hidden></p>
+          </div>
+          <div class="field">
+            <label for="f-retire">預計退休年齡（40–80）</label>
+            <input type="number" id="f-retire" inputmode="numeric" min="40" max="80" step="1" aria-describedby="err-retire">
+            <p class="err" id="err-retire" role="alert" hidden></p>
+          </div>
+        </div>
+
+        <fieldset class="group" id="grp-have">
+          <legend>已取得的學歷與證照</legend>
+          <p class="hint">勾選你已經有的；沒勾選的，時間軸上會標示為「機會」。</p>
+          <div class="have-group"><div class="field field-check"><input type="checkbox" id="f-have-license-basic"><label for="f-have-license-basic">汽車與機車駕照</label></div><div class="field field-check"><input type="checkbox" id="f-have-license-heavy"><label for="f-have-license-heavy">大型重型機車駕照</label></div><div class="field field-check"><input type="checkbox" id="f-have-license-pro"><label for="f-have-license-pro">職業駕照</label></div><div class="field field-check"><input type="checkbox" id="f-have-university"><label for="f-have-university">大學學士</label></div><div class="field field-check"><input type="checkbox" id="f-have-master"><label for="f-have-master">碩士</label></div><div class="field field-check"><input type="checkbox" id="f-have-phd"><label for="f-have-phd">博士</label></div></div>
+        </fieldset>
+
+        <details class="adv" id="adv">
+          <summary>進階設定（兵役、育兒、晚開始）</summary>
+          <fieldset class="group" id="grp-service" hidden>
+            <legend>兵役（男性）</legend>
+            <div class="grid-form">
+              <div class="field">
+                <label for="f-service">兵役顯示</label>
+                <select id="f-service">
+                  <option value="auto">依出生年次預估</option>
+                  <option value="done">已服完或已免役（只標示完成）</option>
+                  <option value="hide">不顯示</option>
+                </select>
+              </div>
+              <div class="field" id="fld-service-type">
+                <label for="f-service-type">役別</label>
+                <select id="f-service-type">
+                  <option value="regular">常備兵役（依出生年次）</option>
+                  <option value="officer">預備軍官役</option>
+                  <option value="nco">預備士官役</option>
+                  <option value="supp">補充兵役</option>
+                  <option value="alt">替代役</option>
+                </select>
+              </div>
+              <div class="field" id="fld-service-age">
+                <label for="f-service-age">預計入營年齡（18–36 歲）</label>
+                <input type="number" id="f-service-age" inputmode="numeric" min="18" max="36" step="1" aria-describedby="err-service-age service-hint">
+                <p class="err" id="err-service-age" role="alert" hidden></p>
+              </div>
+            </div>
+            <p class="hint" id="service-hint">高級中等以上學校的在校學生可緩徵（《兵役法》第 35 條）；實際入營時間因人而異，這裡只是畫圖用的預估，不是徵集通知。</p>
+            <p class="hint" id="service-school-note" hidden>這段時間通常在就學，可能適用緩徵。</p>
+          </fieldset>
+          <fieldset class="group">
+            <legend>育兒</legend>
+            <div class="grid-form">
+              <div class="field field-check">
+                <input type="checkbox" id="f-kid">
+                <label for="f-kid">有小孩（或打算生育）</label>
+              </div>
+              <div class="field">
+                <label for="f-kid-age">幾歲生育（15–60）</label>
+                <input type="number" id="f-kid-age" inputmode="numeric" min="15" max="60" step="1" aria-describedby="err-kid-age">
+                <p class="err" id="err-kid-age" role="alert" hidden></p>
+              </div>
+            </div>
+          </fieldset>
+          <fieldset class="group">
+            <legend>晚開始</legend>
+            <div class="grid-form">
+              <div class="field">
+                <label for="f-start">從幾歲開始領這份薪水（10–80，留空代表從現在開始）</label>
+                <input type="number" id="f-start" inputmode="numeric" min="10" max="80" step="1" aria-describedby="err-start">
+                <p class="err" id="err-start" role="alert" hidden></p>
+              </div>
+            </div>
+          </fieldset>
+        </details>
+
+        <p class="privacy" id="privacy-note">性別與生日只存在這個瀏覽器，不會匯出、不會傳到任何地方；清除瀏覽器資料就會消失。網站載入字型時，Google 會收到你的 IP 位址與瀏覽器資訊，但不會收到你輸入的任何資料。</p>
+        <div class="actions no-print">
+          <button type="button" class="btn" id="print-btn-2">列印／存成 PDF</button>
+          <button type="button" class="btn btn-danger" id="clear-data">清除本機資料</button>
+          <span class="hint" id="clear-status" role="status"></span>
+        </div>
+        <div class="ios-install no-print" id="ios-install" hidden>
+          <strong>在 iPhone／iPad 加入主畫面：</strong>
+          <ol><li>用 Safari 開啟這個網站。</li><li>按下分享按鈕。</li><li>選「加入主畫面」。</li></ol>
+        </div>
+      </form>
+    </details>
+
+    <details class="card" id="asset-card">
+      <summary><span class="sum-title">資產與負債（選填）</span><span class="sum-line">填了之後，和「人生最低收入」比比看是否還有餘裕</span></summary>
+      <div class="grid-form">
+        <div class="field"><label for="f-asset-cash">存款與現金（NT$）</label><input type="number" id="f-asset-cash" inputmode="numeric" min="0" step="1" aria-describedby="err-asset-cash"><p class="err" id="err-asset-cash" role="alert" hidden></p></div>
+        <div class="field"><label for="f-asset-invest">投資（股票、基金等現值，NT$）</label><input type="number" id="f-asset-invest" inputmode="numeric" min="0" step="1" aria-describedby="err-asset-invest"><p class="err" id="err-asset-invest" role="alert" hidden></p></div>
+        <div class="field"><label for="f-asset-other">其他資產（NT$）</label><input type="number" id="f-asset-other" inputmode="numeric" min="0" step="1" aria-describedby="err-asset-other"><p class="err" id="err-asset-other" role="alert" hidden></p></div>
+        <div class="field"><label for="f-debt">尚未償還的借款本金（NT$）</label><input type="number" id="f-debt" inputmode="numeric" min="0" step="1" aria-describedby="err-debt"><p class="err" id="err-debt" role="alert" hidden></p></div>
+        <div class="field"><label for="f-debt-interest">預估還要付的利息總額（NT$）</label><input type="number" id="f-debt-interest" inputmode="numeric" min="0" step="1" aria-describedby="err-debt-interest"><p class="err" id="err-debt-interest" role="alert" hidden></p></div>
+        <div class="field"><label for="f-expense">目前每月固定生活支出（NT$）</label><input type="number" id="f-expense" inputmode="numeric" min="0" step="1" aria-describedby="err-expense"><p class="err" id="err-expense" role="alert" hidden></p></div>
+      </div>
+      <p class="hint">資產與借款只存在這個瀏覽器，不會傳出去。利息請自己估（例如依還款表加總），本站不假設利率。</p>
+    </details>
+
+    <div id="results" hidden>
+      <h3 class="sub-title">時間</h3>
+      <dl class="kpi" id="kpi-time"></dl>
+      <h3 class="sub-title">收入</h3>
+      <dl class="kpi" id="kpi-money"></dl>
+      <p class="note" id="kpi-zero" hidden>月收入是 0，請選擇基本工資或填入自訂金額。</p>
+      <figure class="curve" id="curve-fig">
+        <figcaption id="curve-cap">累積收入曲線（月收入固定、不含調薪與通膨）</figcaption>
+        <div class="curve-box" id="curve-box"><canvas id="curve" role="img" aria-label="累積收入曲線"></canvas></div>
+        <p class="note" id="curve-empty" hidden>累積收入曲線：目前沒有可畫的收入（月收入為 0 或已過退休年齡）。</p>
+        <details class="curve-table" id="curve-table-wrap">
+          <summary>以表格查看累積收入的數字</summary>
+          <div class="table-wrap"><table class="data-table" id="curve-table"></table></div>
+        </details>
+      </figure>
+      <div id="kpi-base-wrap" hidden>
+        <h3 class="sub-title">比較表：18 歲開始工作 vs 從現在開始</h3>
+        <div class="table-wrap"><table class="data-table cmp" id="cmp-table"></table></div>
+        <p class="note" id="cmp-note"></p>
+      </div>
+      <div id="kpi-late-wrap" hidden>
+        <h3 class="sub-title">晚開始</h3>
+        <dl class="kpi" id="kpi-late"></dl>
+      </div>
+      <div id="asset-wrap" hidden>
+        <h3 class="sub-title">代入資產與負債：還有餘裕嗎？</h3>
+        <p class="verdict" id="asset-verdict" role="status"></p>
+        <dl class="kpi" id="asset-kpi"></dl>
+        <figure class="water-fig">
+          <figcaption>資源增減圖（人生最低收入 → 餘裕）</figcaption>
+          <div class="water" id="water"></div>
+        </figure>
+        <details class="curve-table"><summary>以表格查看數字</summary><div class="table-wrap"><table class="data-table" id="asset-table"></table></div></details>
+        <p class="note" id="asset-note"></p>
+      </div>
+      <p class="note" id="kpi-method">算法：月收入 × 12 × 從現在到退休的年數（退休年齡或平均預期壽命取較早者），以今天的新台幣計、稅前。不含調薪、通膨、折現、勞保年金與退休金，也不含失業或中斷工作；這是「只靠基本工資」的保守下限，不是實際會賺的金額，也不是預測壽命。</p>
+    </div>
+  </section>
+
+  <!-- 區塊 3：標籤詳細說明與資料來源 -->
+  <section id="details" class="block" aria-labelledby="details-title">
+    <h2 id="details-title" class="block-title">標籤詳細說明與資料來源</h2>
+    <p class="lead" id="details-lead">每個標籤都附官方來源與查閱日期；沒有官方來源的內容不放。標「本站假設」或「本站推算」的是簡化畫法，不是法規原文。</p>
+    <div class="cards" id="details-list"></div>
+    <article class="card general" id="general-sources">
+      <h3>整體資料來源與假設</h3>
+      <ul id="general-list"></ul>
+    </article>
+  </section>
+</main>
+
+<!-- 區塊 4：頁尾 -->
+<footer class="footer" id="footer">
+  <p id="f-updated"></p>
+  <p id="f-copy"></p>
+  <p id="f-version"></p>
+  <p id="f-oss"></p>
+  <p id="f-disclaimer"></p>
+</footer>
+
+<div id="toasts" class="toasts no-print" role="status" aria-live="polite"></div>
+<noscript><p class="noscript">此網站需要啟用 JavaScript。資料只存在你的瀏覽器中，不會上傳。</p></noscript>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
