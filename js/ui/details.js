@@ -8,23 +8,27 @@ import { WAGE_SOURCE } from '../data/wage.js';
 const link = (s) => h('a', { href: s.url, target: '_blank', rel: 'noopener noreferrer', text: `${s.publisher}《${s.title}》` });
 
 export function renderDetails(listEl, generalEl, model) {
+  // 重畫前記住哪些卡片是展開的（設定改變時不要全部闔上）
+  const openIds = new Set([...listEl.querySelectorAll('details.tagcard[open]')].map((d) => d.id.slice(4)));
   clear(listEl);
   for (const tag of TAGS) {
     if (!appliesTo(tag, model.sex)) continue;
     const row = model.rows.find((r) => r.id === tag.id);
     const where = tag.draw === false ? '不畫在時間軸上（選了對應的役別才會用到）' : row ? `時間軸位置：${rowRange(row)}` : '在你目前的設定下，沒有畫在時間軸上';
     const extra = tag.detailBy?.[model.sex] ?? [];
-    listEl.append(h('article', { class: 'tagcard', id: `tag-${tag.id}`, tabindex: '-1' },
-      h('h3', { text: tag.label }),
-      h('p', { class: 'meta' }, h('span', { class: 'chip', text: KINDS[tag.kind] }), where),
-      h('p', { text: tag.short }),
-      ...tag.detail.map((t) => h('p', { text: t })),
-      ...extra.map((t) => h('p', { text: t })),
-      tag.opportunity ? h('p', { class: 'assume' }, h('strong', { text: '這個年紀的機會：' }), tag.opportunity, '（本站依上述法規整理，不是就業或收入保證。）') : null,
-      tag.countries ? countriesBlock(tag.countries) : null,
-      tag.assumption ? h('p', { class: 'assume' }, h('strong', { text: '本站假設：' }), tag.assumption) : null,
-      h('p', { class: 'src-title', text: '資料來源' }),
-      h('ul', { class: 'src-list' }, tag.sources.map((s) => h('li', {}, link(s), `（${s.role === 'primary' ? '官方來源' : '輔助參考'}，查閱 ${s.accessed}）`))),
+    const open = openIds.has(tag.id);
+    listEl.append(h('details', { class: 'tagcard', id: `tag-${tag.id}`, open: open ? true : null },
+      h('summary', {}, h('h3', { text: tag.label }), h('span', { class: 'sum-meta' }, h('span', { class: 'chip', text: KINDS[tag.kind] }), where)),
+      h('div', { class: 'body' },
+        h('p', { text: tag.short }),
+        ...tag.detail.map((t) => h('p', { text: t })),
+        ...extra.map((t) => h('p', { text: t })),
+        tag.opportunity ? h('p', { class: 'assume' }, h('strong', { text: '這個年紀的機會：' }), tag.opportunity, '（本站依上述法規整理，不是就業或收入保證。）') : null,
+        tag.countries ? countriesBlock(tag.countries) : null,
+        tag.assumption ? h('p', { class: 'assume' }, h('strong', { text: '本站假設：' }), tag.assumption) : null,
+        h('p', { class: 'src-title', text: '資料來源' }),
+        h('ul', { class: 'src-list' }, tag.sources.map((s) => h('li', {}, link(s), `（${s.role === 'primary' ? '官方來源' : '輔助參考'}，查閱 ${s.accessed}）`))),
+      ),
     ));
   }
   clear(generalEl.querySelector('ul')).append(
@@ -50,7 +54,11 @@ function countriesBlock(c) {
 export function jumpToTag(id) {
   const el = document.getElementById(`tag-${id}`);
   if (!el) return;
+  el.open = true;
   history.replaceState(null, '', `#tag-${id}`);
   el.scrollIntoView({ block: 'start' });
-  el.focus({ preventScroll: true });
+  el.querySelector('summary')?.focus({ preventScroll: true });
 }
+
+/** 全部展開或全部收合。 */
+export function setAllCards(listEl, open) { listEl.querySelectorAll('details.tagcard').forEach((d) => { d.open = open; }); }

@@ -16,7 +16,8 @@ import { createTimeline } from './ui/timeline.js';
 import { renderInfo } from './ui/infocard.js';
 import { stateText, rowRange } from './ui/timeline.js';
 import { initSettings } from './ui/settings.js';
-import { renderDetails, jumpToTag } from './ui/details.js';
+import { renderDetails, jumpToTag, setAllCards } from './ui/details.js';
+import { renderIncome } from './ui/income.js';
 import { renderCurve, curveTable, setPrintMode, destroyCurve } from './ui/incomecurve.js';
 import { initPlayer } from './ui/player.js';
 import { initHints } from './ui/hints.js';
@@ -57,6 +58,7 @@ function drawInfo() {
   if (!model) return;
   renderInfo($('infocard'), {
     row: timeline.selected, model, kpi, chances: chanceRows(), onClose: () => timeline.select(null),
+    owned: infoOwned(), onOwn: setOwned,
     collapsed: !!hints.infoCollapsed, onToggle: () => { setHint('infoCollapsed', !hints.infoCollapsed); drawInfo(); },
   });
 }
@@ -125,6 +127,18 @@ function drawCompare(base) {
 }
 const late_start = () => kpi.late.start;
 
+// 資訊卡的「已取得／已達成」勾選：學歷與證照存在 have；兵役存在 service（done）
+function infoOwned() {
+  const r = timeline.selected;
+  if (!r) return false;
+  return r.tag.id === 'service-active' ? prefs.service === 'done' : prefs.have.includes(r.id);
+}
+function setOwned(row, checked) {
+  if (row.tag.id === 'service-active') prefs = { ...prefs, service: checked ? 'done' : 'auto' };
+  else prefs = { ...prefs, have: checked ? [...new Set([...prefs.have, row.id])] : prefs.have.filter((x) => x !== row.id) };
+  save(); settings.refresh(prefs); render();
+}
+
 // 目前這個年紀的機會：進行中、年齡已過但尚未取得、以及 3 年內即將到來的
 function chanceRows() {
   return model.rows.filter((r) => r.tag.opportunity && (r.state === 'now' || r.state === 'chance' || (r.state === 'future' && r.start - model.age <= 3)));
@@ -162,6 +176,7 @@ function render() {
   if (prevId && model.rows.some((r) => r.id === prevId)) timeline.reselect(prevId); else { if (prevId) timeline.select(null); drawInfo(); }
   drawTable();
   drawChances();
+  renderIncome($('income-list'), $('income-lead'), prefs.have);
   renderDetails($('details-list'), $('general-sources'), model);
   drawResults();
   settings?.summary(model, kpi.monthly);
@@ -181,7 +196,7 @@ initHints($('landscape-hint'), $('landscape-ok'), hints, setHint);
 initInstall($('install-app'), $('ios-install'));
 initPrint({
   buttons: [$('print-btn'), $('print-btn-2')], timeline, curve: { setPrintMode },
-  detailsToOpen: [$('settings-card')],
+  detailsToOpen: () => [$('settings-card'), $('asset-card'), ...document.querySelectorAll('details.tagcard, details.income-group, details.countries')],
 });
 
 // 更新：啟動時與前景每 30 分鐘檢查一次；有新版顯示橫幅，使用者按下才套用
@@ -193,6 +208,9 @@ async function updateCheck(manual) {
 $('apply-update').addEventListener('click', () => applyUpdate(reg));
 renderFooter({ onCheck: () => updateCheck(true) });
 
+$('details-expand').addEventListener('click', () => setAllCards($('details-list'), true));
+$('details-collapse').addEventListener('click', () => setAllCards($('details-list'), false));
+addEventListener('hashchange', () => { if (location.hash.startsWith('#tag-')) jumpToTag(location.hash.slice(5)); });
 loadFonts();
 render();
 registerSW(swEnabled()).then((r) => { reg = r; });

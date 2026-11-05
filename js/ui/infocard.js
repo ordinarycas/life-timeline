@@ -4,7 +4,7 @@ import { KINDS } from '../data/tags.js';
 import { ageText, years1, money, yearAt, lvText } from '../core/format.js';
 import { rowRange, stateText } from './timeline.js';
 
-export function renderInfo(root, { row, model, kpi, chances = [], onClose, collapsed = false, onToggle = () => {} }) {
+export function renderInfo(root, { row, model, kpi, chances = [], owned = false, onOwn = null, onClose, collapsed = false, onToggle = () => {} }) {
   clear(root);
   root.classList.toggle('is-collapsed', collapsed);
   const toggle = h('button', { type: 'button', class: 'xbtn', 'aria-expanded': String(!collapsed), 'aria-label': collapsed ? '展開資訊卡' : '收合資訊卡', text: collapsed ? '＋' : '－', onclick: onToggle });
@@ -30,6 +30,7 @@ export function renderInfo(root, { row, model, kpi, chances = [], onClose, colla
     row.extra ? h('p', { class: 'meta', text: row.extra }) : null,
     row.tag.opportunity ? h('p', {}, h('strong', { text: '機會：' }), row.tag.opportunity) : null,
     row.tag.countries ? h('details', { class: 'mini' }, h('summary', { text: `可選擇的 ${row.tag.countries.rows.length} 個國家` }), h('p', { class: 'meta', text: row.tag.countries.rows.map((c) => c[0]).join('、') + '。名額、財力證明見詳細說明。' })) : null,
+    onOwn && (row.tag.obtainable || row.tag.id === 'service-active') ? h('label', { class: 'own' }, h('input', { type: 'checkbox', checked: owned ? true : null, onchange: (e) => onOwn(row, e.target.checked) }), row.tag.id === 'service-active' ? '我已服完兵役（或已免役）' : '我已取得／達成') : null,
     h('p', {}, h('a', { href: `#tag-${row.id}`, text: '看詳細說明與來源' })),
   ].filter(Boolean));
 }

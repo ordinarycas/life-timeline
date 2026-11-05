@@ -167,6 +167,13 @@
       "url": "https://youthtaiwan.mofa.gov.tw/WorkingHoliday/",
       "accessed": "2026-11-05",
       "role": "primary"
+    },
+    "mohwIdeal": {
+      "publisher": "衛生福利部",
+      "title": "把握25-35歲理想生育年齡 媽媽寶寶健康都加分（國健署新聞稿）",
+      "url": "https://www.mohw.gov.tw/cp-5265-67252-1.html",
+      "accessed": "2026-11-05",
+      "role": "primary"
     }
   },
   "kinds": {
@@ -847,6 +854,25 @@
         "military",
         "militaryWiki"
       ]
+    },
+    {
+      "id": "ideal-childbearing",
+      "label": "理想生育年齡（25–35 歲）",
+      "kind": "kids",
+      "audience": "female",
+      "from": 25,
+      "to": 35,
+      "short": "國健署鼓勵女性在 25 至 35 歲之間完成生育規劃。",
+      "detail": [
+        "衛生福利部轉載國民健康署新聞稿：「國民健康署鼓勵女性於25歲至35歲之間完成生育規劃」，並稱 25–35 歲為理想生育年齡。",
+        "這是衛生教育上的建議區間，不是法律規定，也不是每個人的醫療判斷；個人狀況請洽醫師。",
+        "你提到的「18–34 歲」我們沒有找到官方來源支持，所以時間軸上不畫；若你有官方出處，請提供，我們會依來源修改。"
+      ],
+      "sources": [
+        "mohwIdeal",
+        "hpa"
+      ],
+      "assumption": "只畫官方文件寫的 25–35 歲；18–34 歲沒有官方來源，未採用。"
     },
     {
       "id": "risk-35",

@@ -3,10 +3,11 @@ import { initTags } from './tags.js';
 import { initMusic } from './music.js';
 import { initWage } from './wage.js';
 import { initLifeTable } from './life-table.js';
+import { initIncome } from './income.js';
 
 export async function loadContent(readJson) {
-  const [tags, music, wage, life] = await Promise.all(['tags.json', 'music.json', 'wage.json', 'life-table.json'].map(readJson));
-  initTags(tags); initMusic(music); initWage(wage); initLifeTable(life);
+  const [tags, music, wage, life, income] = await Promise.all(['tags.json', 'music.json', 'wage.json', 'life-table.json', 'income.json'].map(readJson));
+  initTags(tags); initMusic(music); initWage(wage); initLifeTable(life); initIncome(income);
 }
 
 export async function fetchJson(name) {
