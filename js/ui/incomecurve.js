@@ -21,6 +21,22 @@ function loadChart() {
 }
 
 // 各曲線的角色：顏色欄位（palette 的鍵）與期末金額標籤的垂直位移
+// 曲線資料點細到每個月（圖上刻度仍以整年標示，滑過或點選時顯示「幾歲幾個月」與日曆月份）
+const MONTHLY = { monthly: true };
+
+/** 年齡（小數）轉成「31 歲 5 個月」。 */
+export function ageMonthsText(x) {
+  const total = Math.round(x * 12);
+  return `${Math.floor(total / 12)} 歲 ${total % 12} 個月`;
+}
+
+/** 今天（年齡 today、所在月 todayYm）之後某年齡對應的日曆月份；今天以前回 ''。 */
+export function calendarMonth(todayYm, today, x) {
+  if (!todayYm || x < today) return '';
+  const idx = Number(todayYm.slice(0, 4)) * 12 + Number(todayYm.slice(5, 7)) - 1 + Math.round((x - today) * 12);
+  return `${Math.floor(idx / 12)} 年 ${(idx % 12) + 1} 月`;
+}
+
 const ROLE = { main: ['line', 16], base: ['base', -8], net: ['net', 30], pay: ['pay', 44] };
 
 const PRINT_PAL = { ink: '#000000', muted: '#333333', grid: '#bdbdbd', line: '#1a3f8a', base: '#1c7c4f', net: '#8a1f2d', pay: '#8a4300', coin: '#5a3a00', surface: '#ffffff' };
@@ -76,18 +92,18 @@ const markers = {
 export async function renderCurve(canvas, p) {
   const Chart = await loadChart();
   const pal = palette();
-  const data = incomeSeries({ monthly: p.monthly, startAge: p.startAge, stopAge: p.stopAge }, p.xFrom, p.xTo);
+  const data = incomeSeries({ monthly: p.monthly, startAge: p.startAge, stopAge: p.stopAge }, p.xFrom, p.xTo, MONTHLY);
   const datasets = [{ label: `從現在開始（月收入 ${money(p.monthly)}）`, data, borderColor: pal.line, backgroundColor: pal.line, borderWidth: 3, pointRadius: 0, pointHoverRadius: 4, fill: false }];
   if (p.base) {
-    datasets.push({ label: `對照：18 歲起領基本工資 ${money(p.base.monthly)}（點線）`, data: incomeSeries(p.base, p.xFrom, p.xTo), borderColor: pal.base, backgroundColor: pal.base, borderWidth: 3, borderDash: [2, 5], pointRadius: 0, pointHoverRadius: 4, fill: false });
+    datasets.push({ label: `對照：18 歲起領基本工資 ${money(p.base.monthly)}（點線）`, data: incomeSeries(p.base, p.xFrom, p.xTo, MONTHLY), borderColor: pal.base, backgroundColor: pal.base, borderWidth: 3, borderDash: [2, 5], pointRadius: 0, pointHoverRadius: 4, fill: false });
   }
   if (p.expense > 0) {
     const sp = { monthly: p.monthly, startAge: p.startAge, stopAge: p.stopAge };
-    datasets.push({ label: `扣除每月消費 ${money(p.expense)} 後（虛線）`, ltlRole: 'net', data: netSeries(sp, p.expense, p.today, p.xFrom, p.xTo), borderColor: pal.net, backgroundColor: pal.net, borderWidth: 3, borderDash: [8, 4], pointRadius: 0, pointHoverRadius: 4, fill: false });
+    datasets.push({ label: `扣除每月消費 ${money(p.expense)} 後（虛線）`, ltlRole: 'net', data: netSeries(sp, p.expense, p.today, p.xFrom, p.xTo, MONTHLY), borderColor: pal.net, backgroundColor: pal.net, borderWidth: 3, borderDash: [8, 4], pointRadius: 0, pointHoverRadius: 4, fill: false });
   }
   if (p.adv) {
     const sp = { monthly: p.monthly, startAge: p.startAge, stopAge: p.stopAge };
-    const data = incomeSeries(sp, p.xFrom, p.xTo).map((d) => ({ x: d.x, y: advancedNet(p.adv.data, p.adv.todayYm, p.today, d.x, d.y, { withPrincipal: true }) }));
+    const data = incomeSeries(sp, p.xFrom, p.xTo, MONTHLY).map((d) => ({ x: d.x, y: advancedNet(p.adv.data, p.adv.todayYm, p.today, d.x, d.y, { withPrincipal: true }) }));
     datasets.push({ label: `扣除生活支出月平均與每月還款（本金＋利息${p.adv.data.pledge ? '，股票質押只計利息' : ''}）後（進階匯入）`, ltlRole: 'pay', data, borderColor: pal.pay, backgroundColor: pal.pay, borderWidth: 3, borderDash: [3, 3], pointRadius: 0, pointHoverRadius: 4, fill: false });
   }
   datasets.forEach((ds, i) => { if (!ds.ltlRole) ds.ltlRole = i === 0 ? 'main' : 'base'; });
@@ -103,7 +119,7 @@ export async function renderCurve(canvas, p) {
       },
       plugins: {
         legend: { display: true, position: 'top', align: 'start', labels: { color: pal.ink, boxWidth: 18, usePointStyle: false } },
-        tooltip: { callbacks: { title: (it) => `${ageText(it[0].parsed.x)} 歲`, label: (it) => `${it.dataset.label.split('（')[0]}：${money(it.parsed.y)}` } },
+        tooltip: { callbacks: { title: (it) => { const cm = calendarMonth(p.todayYm, p.today, it[0].parsed.x); return `${ageMonthsText(it[0].parsed.x)}${cm ? `（${cm}）` : ''}`; }, label: (it) => `${it.dataset.label.split('（')[0]}：${money(it.parsed.y)}` } },
         ltlMarkers: { stop: p.stopAge, today: p.today, pal },
       },
     },

@@ -80,14 +80,15 @@ export function netCumulative(params, expense, today, x) {
   return x <= today ? 0 : cumulativeIncome(params, x) - spent;
 }
 
-export function netSeries(params, expense, today, xFrom, xTo) {
-  return incomeSeries(params, xFrom, xTo).map((d) => ({ x: d.x, y: netCumulative(params, expense, today, d.x) }));
+export function netSeries(params, expense, today, xFrom, xTo, opts) {
+  return incomeSeries(params, xFrom, xTo, opts).map((d) => ({ x: d.x, y: netCumulative(params, expense, today, d.x) }));
 }
 
 /** 曲線資料點：每整數歲一點，外加起點、開始領與停止領的歲數（皆限制在 xFrom～xTo 內）。 */
-export function incomeSeries(params, xFrom, xTo) {
+export function incomeSeries(params, xFrom, xTo, { monthly = false } = {}) {
   const xs = new Set();
-  for (let x = Math.ceil(xFrom); x <= xTo; x++) xs.add(x);
+  if (monthly) { for (let k = Math.ceil(xFrom * 12 - 1e-9); k <= Math.floor(xTo * 12 + 1e-9); k++) xs.add(Math.round((k / 12) * 1e6) / 1e6); }
+  else for (let x = Math.ceil(xFrom); x <= xTo; x++) xs.add(x);
   for (const x of [xFrom, params.startAge, params.stopAge, xTo]) if (x >= xFrom && x <= xTo) xs.add(Math.round(x * 1e6) / 1e6);
   return [...xs].sort((a, b) => a - b).map((x) => ({ x, y: cumulativeIncome(params, x) }));
 }

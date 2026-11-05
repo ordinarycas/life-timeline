@@ -114,7 +114,8 @@ function drawResults() {
   const can = monthly > 0 && inc.stopAge > model.age;
   $('curve-box').hidden = !can; $('curve-table-wrap').hidden = !can; $('curve-empty').hidden = can;
   if (can) {
-    const cp = adv ? { ...kpi.curve, adv: { data: adv, todayYm: todayTaipei().slice(0, 7) } } : kpi.curve;
+    const todayYm = todayTaipei().slice(0, 7);
+    const cp = adv ? { ...kpi.curve, todayYm, adv: { data: adv, todayYm } } : { ...kpi.curve, todayYm };
     renderCurve($('curve'), cp).catch(() => { $('curve-empty').hidden = false; $('curve-empty').textContent = '圖表載入失敗，請看下方表格。'; });
     curveTable($('curve-table'), cp);
   } else destroyCurve();
