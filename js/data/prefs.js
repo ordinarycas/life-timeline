@@ -11,7 +11,7 @@ export const HINTS_KEY = 'ltl.hints.v1';
 
 export const DEFAULTS = Object.freeze({
   sex: '', birth: '', have: [], retire: 65, start: 0, kid: false, kidAge: 30,
-  wage: 'current', monthly: 0, service: 'auto', serviceAge: 22, serviceType: 'regular', music: 'off', musicUrl: '', theme: 'auto',
+  wage: 'current', monthly: 0, service: 'auto', serviceAge: 22, serviceType: 'regular', music: 'off', musicUrl: '', theme: 'light',
   assetCash: 0, assetInvest: 0, assetOther: 0, debt: 0, debtInterest: 0, expense: 0,
 });
 

@@ -13,8 +13,9 @@ export function renderIncome(listEl, leadEl, have) {
       h('summary', {}, h('span', { class: 'sum-title', text: g.title }), badge ? h('span', { class: 'badge', text: badge }) : null, h('span', { class: 'sum-line', text: `${g.jobs.length} 類職缺` })),
       h('p', { class: 'intro', text: g.intro }),
       h('div', { class: 'table-wrap' }, h('table', { class: 'data-table income-table' },
-        h('thead', {}, h('tr', {}, ['職缺', '條件', '預估薪資（新台幣、稅前）', '備註'].map(th))),
+        h('thead', {}, h('tr', {}, (g.labels ?? ['職缺', '條件', '預估薪資（新台幣、稅前）', '備註']).map(th))),
         h('tbody', {}, g.jobs.map((j) => h('tr', {}, h('th', { scope: 'row', text: j.job }), h('td', { text: j.condition }), h('td', { class: 'pay', text: j.pay }), h('td', { text: j.note })))))),
+      g.sources ? h('div', {}, h('p', { class: 'src-title', text: '本組官方來源' }), h('ul', { class: 'src-list' }, g.sources.map((s) => h('li', {}, h('a', { href: s.url, target: '_blank', rel: 'noopener noreferrer', text: `${s.publisher}：${s.title}` }), `（查閱 ${s.accessed}）`)))) : null,
     ));
   }
 }

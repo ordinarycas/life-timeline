@@ -1,5 +1,6 @@
 // 區塊 3：每個標籤的詳細說明、本站假設與資料來源（含查閱日期）。
 import { h, clear } from './dom.js';
+import { showTab } from './tabs.js';
 import { TAGS, KINDS, appliesTo } from '../data/tags.js';
 import { rowRange } from './timeline.js';
 import { LIFE_TABLE } from '../core/lifetime.js';
@@ -54,6 +55,7 @@ function countriesBlock(c) {
 export function jumpToTag(id) {
   const el = document.getElementById(`tag-${id}`);
   if (!el) return;
+  showTab('details', { scroll: false }); // 手機分頁：先切到「說明」才找得到卡片
   el.open = true;
   history.replaceState(null, '', `#tag-${id}`);
   el.scrollIntoView({ block: 'start' });

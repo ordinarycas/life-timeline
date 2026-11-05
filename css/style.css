@@ -25,6 +25,7 @@
   --k-kids: #ffd166;
   --curve-main: #2d5aa8;
   --curve-base: #1c7c4f;
+  --curve-net: #b03a48;
   --past: #626779;
   --past-ink: #ffffff;
   --seg-walked: #d5dce8;
@@ -63,6 +64,7 @@
     --k-kids: #ffd166;
     --curve-main: #8db9ff;
     --curve-base: #99d8b9;
+    --curve-net: #ff9ca6;
     --past: #8e96b8;
     --past-ink: #1a1e33;
     --seg-walked: #404869;
@@ -99,6 +101,7 @@
   --k-kids: #ffd166;
   --curve-main: #8db9ff;
   --curve-base: #99d8b9;
+  --curve-net: #ff9ca6;
   --past: #8e96b8;
   --past-ink: #1a1e33;
   --seg-walked: #404869;
@@ -393,9 +396,30 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 8px; }
   .stage-map { height: min(56svh, 460px); }
   .stage-dock { position: static; flex-direction: column-reverse; align-items: stretch; margin-top: 10px; pointer-events: auto; }
   .player { width: 100% !important; opacity: 1; }
-  .infocard { max-width: none; max-height: none; margin-left: 0; }
+  .infocard { flex: none; max-width: none; max-height: none; min-height: 0; margin-left: 0; }
+  .player { flex: none; }
   .stage-title { font-size: 22px; }
   .block-title { font-size: 21px; }
+}
+/* ---- 手機直向：底部導覽列分頁（橫向與桌面不啟用；列印不受影響） ---- */
+.bottomnav { display: none; }
+@media screen and (max-width: 720px) and (min-height: 521px) {
+  body[data-tab="timeline"] [data-panel]:not([data-panel="timeline"]),
+  body[data-tab="settings"] [data-panel]:not([data-panel="settings"]),
+  body[data-tab="chances"] [data-panel]:not([data-panel="chances"]),
+  body[data-tab="details"] [data-panel]:not([data-panel="details"]) { display: none; }
+  body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  .bottomnav {
+    display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    background: var(--surface); border-top: 3px solid var(--line); padding-bottom: env(safe-area-inset-bottom);
+  }
+  .bottomnav button {
+    min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    background: transparent; border: 0; border-left: 2px solid var(--grid); color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .bottomnav button:first-child { border-left: 0; }
+  .bottomnav .ic { font-size: 18px; line-height: 1; }
+  .bottomnav button[aria-current="page"] { background: var(--coin); color: #2d3047; }
 }
 /* ---- 橫向手機：高度很矮，留給時間軸 ---- */
 @media (max-height: 520px) and (orientation: landscape) {

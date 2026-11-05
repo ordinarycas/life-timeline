@@ -1,5 +1,5 @@
 // 主題：auto（跟隨系統）／light／dark。data-theme 屬性由 theme-init.js 先行套用，這裡負責切換與同步。
-const ORDER = ['auto', 'light', 'dark'];
+const ORDER = ['light', 'dark', 'auto'];
 const LABEL = { auto: '主題：自動', light: '主題：淺色', dark: '主題：深色' };
 
 export function applyTheme(theme) {

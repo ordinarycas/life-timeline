@@ -21,6 +21,7 @@ export function computeKpi(model, prefs) {
     mineIncome: late ? late.lateIncome : inc.income,
     // 曲線：x 軸從 18 歲（或目前年齡，取較小者）到壽命終點；對照線從 18 歲起領基本工資
     curve: {
+      expense: Number(prefs.expense) > 0 ? Number(prefs.expense) : 0,
       monthly, startAge: late ? late.start : model.age, stopAge: Math.max(inc.stopAge, model.age),
       xFrom: Math.min(model.age, BASELINE_AGE), xTo: model.endAge, today: model.age,
       base: base ? { monthly: BASELINE_WAGE, startAge: BASELINE_AGE, stopAge: inc.stopAge } : null,

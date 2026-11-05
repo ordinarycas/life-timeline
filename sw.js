@@ -2,7 +2,7 @@
 // 同源只處理 GET；唯一的跨網域例外是 Google Fonts 的兩個網域（字型樣式與檔案），存在獨立快取 ltl-fonts-v1，離線時仍有字型。
 // 下方 PRECACHE 區塊由 `npm run gen:sw` 產生（含內容雜湊的版本號）；tests/pwa.test.js 會檢查它是否過期。
 // === PRECACHE:BEGIN ===
-const VERSION = 'ltl-f00affe236';
+const VERSION = 'ltl-9c8a37677d';
 const PRECACHE = [
   "./",
   "./css/style.css",
@@ -49,6 +49,7 @@ const PRECACHE = [
   "./js/ui/player.js",
   "./js/ui/print.js",
   "./js/ui/settings.js",
+  "./js/ui/tabs.js",
   "./js/ui/theme.js",
   "./js/ui/timeline.js",
   "./js/ui/update.js",

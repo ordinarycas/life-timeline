@@ -18,6 +18,7 @@ import { stateText, rowRange } from './ui/timeline.js';
 import { initSettings } from './ui/settings.js';
 import { renderDetails, jumpToTag, setAllCards } from './ui/details.js';
 import { renderIncome } from './ui/income.js';
+import { initTabs } from './ui/tabs.js';
 import { renderCurve, curveTable, setPrintMode, destroyCurve } from './ui/incomecurve.js';
 import { initPlayer } from './ui/player.js';
 import { initHints } from './ui/hints.js';
@@ -189,7 +190,7 @@ settings = initSettings({
   onClear: (p) => { prefs = p; save(); initThemeApply(); render(); },
 });
 
-function initThemeApply() { document.documentElement.removeAttribute('data-theme'); $('theme-toggle').textContent = '主題：自動'; }
+function initThemeApply() { document.documentElement.setAttribute('data-theme', 'light'); $('theme-toggle').textContent = '主題：淺色'; }
 initTheme($('theme-toggle'), prefs.theme, (t) => { prefs = { ...prefs, theme: t }; save(); render(); });
 initPlayer($('player'), prefs, (patch) => { prefs = { ...prefs, ...patch }; save(); }, { collapsed: !!hints.playerCollapsed, onCollapse: (v) => setHint('playerCollapsed', v) });
 initHints($('landscape-hint'), $('landscape-ok'), hints, setHint);
@@ -211,6 +212,7 @@ renderFooter({ onCheck: () => updateCheck(true) });
 $('details-expand').addEventListener('click', () => setAllCards($('details-list'), true));
 $('details-collapse').addEventListener('click', () => setAllCards($('details-list'), false));
 addEventListener('hashchange', () => { if (location.hash.startsWith('#tag-')) jumpToTag(location.hash.slice(5)); });
+initTabs($('bottomnav'));
 loadFonts();
 render();
 registerSW(swEnabled()).then((r) => { reg = r; });

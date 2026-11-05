@@ -74,6 +74,16 @@ export function cumulativeIncome({ monthly, startAge, stopAge }, x) {
   return monthly * Math.round(Math.max(worked, 0) * 12);
 }
 
+/** 扣除每月消費後的累積金額：從 today 起每月支出 expense（退休後仍持續），今天之前為 0。 */
+export function netCumulative(params, expense, today, x) {
+  const spent = expense * Math.round(Math.max(x - today, 0) * 12);
+  return x <= today ? 0 : cumulativeIncome(params, x) - spent;
+}
+
+export function netSeries(params, expense, today, xFrom, xTo) {
+  return incomeSeries(params, xFrom, xTo).map((d) => ({ x: d.x, y: netCumulative(params, expense, today, d.x) }));
+}
+
 /** 曲線資料點：每整數歲一點，外加起點、開始領與停止領的歲數（皆限制在 xFrom～xTo 內）。 */
 export function incomeSeries(params, xFrom, xTo) {
   const xs = new Set();

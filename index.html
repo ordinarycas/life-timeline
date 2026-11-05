@@ -25,7 +25,7 @@
   <div class="top-actions">
     <button type="button" id="install-app" class="btn" hidden>安裝 App</button>
     <button type="button" id="print-btn" class="btn">列印</button>
-    <button type="button" id="theme-toggle" class="btn" aria-label="切換主題">主題：自動</button>
+    <button type="button" id="theme-toggle" class="btn" aria-label="切換主題">主題：淺色</button>
   </div>
 </header>
 
@@ -36,7 +36,7 @@
 
 <main id="main" tabindex="-1">
   <!-- 區塊 1：人生時間軸 -->
-  <section id="stage" class="stage" aria-labelledby="stage-title">
+  <section id="stage" class="stage" data-panel="timeline" aria-labelledby="stage-title">
     <div class="stage-top">
       <h1 id="stage-title" class="stage-title">人生時間軸</h1>
       <p id="stage-sub" class="stage-sub"></p>
@@ -63,19 +63,19 @@
     </div>
     </div>
   </section>
-  <details class="tl-table-wrap no-print" id="tl-table-wrap">
+  <details class="tl-table-wrap no-print" id="tl-table-wrap" data-panel="timeline">
     <summary>以表格查看時間軸的數字</summary>
     <div class="table-wrap"><table class="data-table" id="tl-table"></table></div>
   </details>
 
-  <section id="chances" class="block" aria-labelledby="chances-title">
+  <section id="chances" class="block" data-panel="chances" aria-labelledby="chances-title">
     <h2 id="chances-title" class="block-title">你這個年紀的機會</h2>
     <p class="lead" id="chances-lead">依你的年紀與已取得的學歷、證照整理：這個年紀有哪些機會，可以累積經驗或技能、進一步賺取收入。這是「可以把握的機會」，不是保證能賺到多少錢。</p>
     <ul class="chances" id="chances-list"></ul>
   </section>
 
   <!-- 區塊 2：使用者設定與結果 -->
-  <section id="settings" class="block" aria-labelledby="settings-title">
+  <section id="settings" class="block" data-panel="settings" aria-labelledby="settings-title">
     <h2 id="settings-title" class="block-title">使用者設定與結果</h2>
     <details class="card" id="settings-card" open>
       <summary><span class="sum-title">我的設定</span><span class="sum-line" id="settings-summary"></span></summary>
@@ -213,7 +213,7 @@
       <dl class="kpi" id="kpi-money"></dl>
       <p class="note" id="kpi-zero" hidden>月收入是 0，請選擇基本工資或填入自訂金額。</p>
       <figure class="curve" id="curve-fig">
-        <figcaption id="curve-cap">累積收入曲線（月收入固定、不含調薪與通膨）</figcaption>
+        <figcaption id="curve-cap">累積收入曲線（月收入固定、不含調薪與通膨；有填每月生活支出時，多一條扣除消費後的虛線）</figcaption>
         <div class="curve-box" id="curve-box"><canvas id="curve" role="img" aria-label="累積收入曲線"></canvas></div>
         <p class="note" id="curve-empty" hidden>累積收入曲線：目前沒有可畫的收入（月收入為 0 或已過退休年齡）。</p>
         <details class="curve-table" id="curve-table-wrap">
@@ -245,14 +245,14 @@
     </div>
   </section>
 
-  <section id="income" class="block" aria-labelledby="income-title">
+  <section id="income" class="block" data-panel="chances" aria-labelledby="income-title">
     <h2 id="income-title" class="block-title">收入資源</h2>
     <p class="lead" id="income-lead"></p>
     <div id="income-list"></div>
   </section>
 
   <!-- 區塊 3：標籤詳細說明與資料來源 -->
-  <section id="details" class="block" aria-labelledby="details-title">
+  <section id="details" class="block" data-panel="details" aria-labelledby="details-title">
     <h2 id="details-title" class="block-title">標籤詳細說明與資料來源</h2>
     <p class="lead" id="details-lead">每個標籤都附官方來源與查閱日期；沒有官方來源的內容不放。標「本站假設」或「本站推算」的是簡化畫法，不是法規原文。</p>
     <div class="details-tools no-print"><button type="button" class="btn" id="details-expand">全部展開</button><button type="button" class="btn" id="details-collapse">全部收合</button></div>
@@ -265,13 +265,21 @@
 </main>
 
 <!-- 區塊 4：頁尾 -->
-<footer class="footer" id="footer">
+<footer class="footer" id="footer" data-panel="details">
   <p id="f-updated"></p>
   <p id="f-copy"></p>
   <p id="f-version"></p>
   <p id="f-oss"></p>
   <p id="f-disclaimer"></p>
 </footer>
+
+<!-- 手機直向的底部導覽列：切換分頁（桌面與橫向不顯示，列印時全部印出） -->
+<nav class="bottomnav no-print" id="bottomnav" aria-label="頁面分頁">
+  <button type="button" data-tab="timeline" aria-current="page"><span class="ic" aria-hidden="true">🗺</span>時間軸</button>
+  <button type="button" data-tab="settings"><span class="ic" aria-hidden="true">⚙</span>設定</button>
+  <button type="button" data-tab="chances"><span class="ic" aria-hidden="true">★</span>機會</button>
+  <button type="button" data-tab="details"><span class="ic" aria-hidden="true">📖</span>說明</button>
+</nav>
 
 <div id="toasts" class="toasts no-print" role="status" aria-live="polite"></div>
 <noscript><p class="noscript">此網站需要啟用 JavaScript。資料只存在你的瀏覽器中，不會上傳。</p></noscript>
