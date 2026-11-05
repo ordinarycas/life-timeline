@@ -74,7 +74,7 @@ export function renderAssets(els, a, monthly, fromAdv = false, loans = null) {
       h('ul', { class: 'lv-advice' }, as.advice.map((t) => h('li', { text: t })),
         as.toNext != null ? h('li', { text: `再增加約 ${money(as.toNext)} 的資源（或減少同額支出、借款），就會升到「${as.nextName}」。` }) : null,
         as.maxMonthlyExpense > 0 ? h('li', { text: `每月最多可花約 ${money(as.maxMonthlyExpense)}，才不會出現缺口。` }) : null),
-      h('p', { class: 'note', text: '等級門檻（缺口、吃緊、剛好、餘裕、完美）是本站自訂的粗略分級：總資源占餘命內支出的比例 80%、100%、125%、160%。這不是財務建議，也不預測壽命。' }),
+      h('p', { class: 'note', text: '等級門檻（缺口、吃緊、剛好、餘裕、完美）是本站自訂的粗略分級：總資源占餘命內支出的比例：100% 以下為缺口、超過 100% 為吃緊、125% 起為剛好、150% 起為餘裕、200%（2 倍）以上為完美。這不是財務建議，也不預測壽命。' }),
     );
   }
 

@@ -40,20 +40,23 @@ export function computeAssets(base, p) {
   };
 }
 
-/** 五個等級（依「還清借款後的總資源 ÷ 餘命內固定支出」）。門檻是本站自訂的粗略分級，不是財務建議。 */
+/**
+ * 五個等級（依「還清借款後的總資源 ÷ 餘命內固定支出」）。門檻是本站自訂的粗略分級，不是財務建議。
+ * 缺口：100% 以下（含 100%）；吃緊：超過 100% 到 125% 以下；剛好：125% 到 150% 以下；餘裕：150% 到 200% 以下；完美：200% 以上（含 200%）。
+ */
 export const LEVELS = Object.freeze([
-  { level: 1, name: '缺口', min: -Infinity, summary: '資源撐不到餘命結束，缺口明顯。' },
-  { level: 2, name: '吃緊', min: 0.8, summary: '資源略少於支出，有小幅缺口。' },
-  { level: 3, name: '剛好', min: 1, summary: '資源剛好涵蓋支出，緩衝很薄。' },
-  { level: 4, name: '餘裕', min: 1.25, summary: '資源高於支出，有一些緩衝。' },
-  { level: 5, name: '完美', min: 1.6, summary: '資源明顯高於支出，緩衝充足。' },
+  { level: 1, name: '缺口', min: -Infinity, summary: '資源只夠或不夠支出（100% 以下），撐不到餘命結束。' },
+  { level: 2, name: '吃緊', min: 1, summary: '資源略高於支出，但緩衝很薄。' },
+  { level: 3, name: '剛好', min: 1.25, summary: '資源涵蓋支出，並有基本的緩衝。' },
+  { level: 4, name: '餘裕', min: 1.5, summary: '資源明顯高於支出，緩衝不少。' },
+  { level: 5, name: '完美', min: 2, summary: '資源達到支出的 2 倍以上，緩衝充足。' },
 ]);
 
 const ADVICE = {
   1: ['先確認每月支出與借款是否都填對。', '可以從這幾件事試試看：提高月收入、延後退休年齡、降低每月支出、減少或提早還清高利率借款。', '上方可以調整數字，立刻看到等級變化。'],
-  2: ['差一點就能涵蓋。小幅調整就可能補上缺口：每月支出少一點、晚一點退休，或把高利率借款優先還清。', '把「每月最多可花」當作參考上限。'],
-  3: ['剛好涵蓋，代表沒有多餘的緩衝；任何意外支出、收入中斷或物價上漲都可能讓它變成缺口。', '可以先準備緊急預備金，並檢查借款利率與期數。'],
-  4: ['有一些緩衝。可以保留一部分當作緊急預備金，其餘再決定要用在退休準備、投資或提前還款。', '想更保守，可以把物價上漲與收入中斷的情況也試算看看。'],
+  2: ['剛超過收支平衡，但任何意外支出、收入中斷或物價上漲都可能讓它回到缺口。', '可以先準備緊急預備金，並把高利率借款優先還清。'],
+  3: ['有基本的緩衝。可以保留一部分當作緊急預備金，其餘再決定要用在退休準備、投資或提前還款。', '想更保守，可以把物價上漲與收入中斷的情況也試算看看。'],
+  4: ['緩衝不少。可以考慮提高退休準備或投資的比例，也可以評估是否需要提高保障。', '再往上走就是「完美」：資源達到支出的 2 倍。'],
   5: ['資源明顯高於支出。可以考慮：提早退休、提高每月可花的金額，或把餘裕分配到投資、保障與提前還款。', '這個結果仍假設金額固定、不含通膨，實際規劃請留一些空間。'],
 };
 
@@ -64,13 +67,14 @@ const ADVICE = {
 export function assessAssets(a) {
   if (!(a.lifeExpense > 0)) return null;
   const ratio = a.resources / a.lifeExpense;
-  const lv = [...LEVELS].reverse().find((x) => ratio >= x.min) ?? LEVELS[0];
+  // 100% 以下（含）為缺口；其餘依門檻由高到低找（完美為 200% 以上，含 200%）
+  const lv = ratio <= 1 ? LEVELS[0] : ([...LEVELS].reverse().find((x) => ratio >= x.min) ?? LEVELS[1]);
   const next = LEVELS.find((x) => x.level === lv.level + 1) ?? null;
   return {
     level: lv.level, name: lv.name, summary: lv.summary, ratio,
     advice: ADVICE[lv.level],
     // 還差多少資源才升到下一級（已是最高級回 null）
-    toNext: next ? Math.max(Math.ceil(next.min * a.lifeExpense - a.resources), 0) : null,
+    toNext: next ? Math.max(Math.ceil(next.min * a.lifeExpense - a.resources) + (lv.level === 1 ? 1 : 0), 0) : null, // 缺口升級要「超過」100%
     nextName: next?.name ?? null,
     maxMonthlyExpense: a.maxMonthlyExpense,
   };
