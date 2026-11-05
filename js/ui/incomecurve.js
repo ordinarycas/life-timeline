@@ -88,12 +88,12 @@ export async function renderCurve(canvas, p) {
   if (p.adv) {
     const sp = { monthly: p.monthly, startAge: p.startAge, stopAge: p.stopAge };
     const data = incomeSeries(sp, p.xFrom, p.xTo).map((d) => ({ x: d.x, y: advancedNet(p.adv.data, p.adv.todayYm, p.today, d.x, d.y) }));
-    datasets.push({ label: `扣除生活支出月平均 ${money(p.adv.data.livingMonthlyAvg)} 與借款利息後（進階匯入）`, ltlRole: 'adv', data, borderColor: pal.adv, backgroundColor: pal.adv, borderWidth: 3, borderDash: [14, 4, 2, 4], pointRadius: 0, pointHoverRadius: 4, fill: false });
+    datasets.push({ label: `扣除生活支出月平均 ${money(p.adv.data.livingMonthlyAvg)} 與借款${p.adv.data.pledge ? '、股票質押' : ''}利息後（進階匯入）`, ltlRole: 'adv', data, borderColor: pal.adv, backgroundColor: pal.adv, borderWidth: 3, borderDash: [14, 4, 2, 4], pointRadius: 0, pointHoverRadius: 4, fill: false });
   }
   if (p.adv) {
     const sp = { monthly: p.monthly, startAge: p.startAge, stopAge: p.stopAge };
     const data = incomeSeries(sp, p.xFrom, p.xTo).map((d) => ({ x: d.x, y: advancedNet(p.adv.data, p.adv.todayYm, p.today, d.x, d.y, { withPrincipal: true }) }));
-    datasets.push({ label: `扣除生活支出月平均與實際月繳（本金＋利息）後（進階匯入）`, ltlRole: 'pay', data, borderColor: pal.pay, backgroundColor: pal.pay, borderWidth: 3, borderDash: [3, 3], pointRadius: 0, pointHoverRadius: 4, fill: false });
+    datasets.push({ label: `扣除生活支出月平均與實際月繳（本金＋利息${p.adv.data.pledge ? '，含股票質押利息' : ''}）後（進階匯入）`, ltlRole: 'pay', data, borderColor: pal.pay, backgroundColor: pal.pay, borderWidth: 3, borderDash: [3, 3], pointRadius: 0, pointHoverRadius: 4, fill: false });
   }
   datasets.forEach((ds, i) => { if (!ds.ltlRole) ds.ltlRole = i === 0 ? 'main' : 'base'; });
   const base = {

@@ -103,7 +103,7 @@ function drawResults() {
   const useAdv = !!(prefs.useAdv && adv);
   $('f-use-adv').disabled = !adv;
   $('adv-hint').textContent = adv ? '' : '還沒有匯入進階資料。到「進階」頁匯入後，這裡就能勾選。';
-  const assetPrefs = useAdv ? { ...prefs, ...advancedAssetInputs(adv, todayTaipei().slice(0, 7)) } : prefs;
+  const assetPrefs = useAdv ? { ...prefs, ...advancedAssetInputs(adv, todayTaipei().slice(0, 7), inc.lifeMonths) } : prefs;
   if (hasAssetInput(assetPrefs)) renderAssets(assetEls, computeAssets({ income: inc.income, lifeMonths: inc.lifeMonths, monthly }, assetPrefs), monthly, useAdv);
   else hideAssets(assetEls);
   // 曲線

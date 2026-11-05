@@ -50,7 +50,7 @@ export function renderAssets(els, a, monthly, fromAdv = false) {
       h('td', { class: 'num', text: s.kind === 'total' ? total(s.value) : signedMoney(s.sign === '－' ? -s.value : s.value) })))),
   );
   note.textContent = `算法：人生最低收入（${money(monthly)} × 到退休的月數）＋ 資產 － 借款本金與你估的利息 － 每月固定支出 × 剩餘月數。金額固定、以今天的新台幣計，不含通膨、投資報酬、退休金、勞保年金與自住不動產的居住價值；資產只計你填的項目。這是粗略的對照，不是理財或投資建議。`;
-  if (fromAdv) note.textContent += ' 本次借款本金、利息與每月支出來自「進階」匯入的資料（生活支出為 12 個月平均）。';
+  if (fromAdv) note.textContent += ' 本次借款（含股票質押）、利息、每月支出與投資現值來自「進階」匯入的資料：生活支出為 12 個月平均，股票質押假設本金不還、利息持續到餘命結束。';
   wrap.hidden = false;
 }
 

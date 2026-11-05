@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; img-src 'self' data:; font-src https://fonts.gstatic.com; media-src 'self'; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; img-src 'self' data:; font-src https://fonts.gstatic.com; media-src 'self'; connect-src 'self' https://www.twse.com.tw https://open.er-api.com; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="description" content="進階功能：匯入由 Excel 轉出的 JSON，讓累積收入曲線扣除生活支出月平均與借款利息。資料只存在你的瀏覽器。">
 <meta name="color-scheme" content="light dark">
@@ -24,21 +24,28 @@
 <main id="main" tabindex="-1">
   <section class="block" aria-labelledby="adv-title">
     <h1 id="adv-title" class="block-title">匯入支出與借款（進階）</h1>
-    <p class="lead">把你的資產負債表 Excel 轉成 JSON 後匯入，首頁的「累積收入曲線」會多一條線：從今天起每月扣掉<strong>生活支出的 12 個月平均</strong>（往後一直推算），再加上 Excel 算出的<strong>每月借款利息</strong>。</p>
+    <p class="lead">把你的資產負債表 Excel 轉成 JSON 後匯入，首頁的「累積收入曲線」會多一條線：從今天起每月扣掉<strong>生活支出的 12 個月平均</strong>（往後一直推算），再加上 Excel 算出的<strong>每月借款利息</strong>（銀行信用貸款、循環額度、保單借款）與<strong>股票質押利息</strong>。</p>
     <details class="card" open>
       <summary><span class="sum-title">怎麼轉出 JSON</span></summary>
       <ol>
         <li>在你的電腦安裝 Python 與 openpyxl（<code>pip install openpyxl</code>）。</li>
-        <li>執行：<code>python tools/xlsx_to_json.py 資產負債表.xlsx</code>，會產生 <code>ltl-advanced.json</code>。</li>
-        <li>在下方選擇這個檔案。轉出的檔案只有「生活支出月平均」與「每月借款利息、本金」，不含信用卡明細、家人戶頭與股票帳戶。</li>
+        <li>執行：<code>python tools/xlsx_to_json.py 資產負債表.xlsx</code>，會產生 <code>private/ltl-advanced.json</code>（此資料夾已被 git 忽略）。</li>
+        <li>在下方選擇這個檔案。轉出的檔案只有「生活支出月平均」、各貸款的類型／餘額／利率、「每月借款利息與本金」、股票質押的已借金額與利息，以及持股現值；不含銀行名稱、股票代號、信用卡明細與家人戶頭。</li>
       </ol>
-      <p class="note">轉換只支援原表的版面（需要「每月支出」「月度彙總」工作表）。生活支出月平均是 Excel 12 個月資料的平均；若有月份的信用卡還沒輸入，平均會偏低。</p>
+      <p class="note">轉換只支援原表的版面（需要「每月支出」「月度彙總」「借款總表」「股票質押」工作表）。生活支出月平均是 Excel 12 個月資料的平均；若有月份的信用卡還沒輸入，平均會偏低。</p>
     </details>
     <div class="card" id="adv-import">
       <h2 class="sub-title">匯入</h2>
       <div class="field"><label for="adv-file">選擇 JSON 檔案</label><input type="file" id="adv-file" accept="application/json,.json"></div>
       <p id="adv-status" class="note" role="status"></p>
       <button type="button" id="adv-clear" class="btn" hidden>清除已匯入的資料</button>
+    </div>
+    <div class="card" id="adv-market">
+      <h2 class="sub-title">線上更新股價與匯率（選用）</h2>
+      <p class="note">只有你按下按鈕時才會連線，不會自動更新。會連到兩個地方：<a href="https://www.twse.com.tw/" target="_blank" rel="noopener noreferrer">臺灣證券交易所</a>（上市股票收盤價，只送出你持股的股票代號，不送股數與其他資料）與 <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer">ExchangeRate-API</a>（USD/TWD 匯率，非官方牌價，不送出任何資料）。上櫃股票沒有可從網頁直接讀取的官方來源，會沿用匯入的價格。更新後的股價與匯率只存在這個瀏覽器，並用來重算持股現值與美元保單借款。</p>
+      <div class="top-actions"><button type="button" id="adv-update" class="btn btn-primary">更新股價與匯率</button><button type="button" id="adv-market-clear" class="btn" hidden>清除線上更新</button></div>
+      <p id="adv-market-status" class="note" role="status"></p>
+      <div id="adv-market-table"></div>
     </div>
     <h2 class="sub-title">目前的資料</h2>
     <div id="adv-summary"></div>
