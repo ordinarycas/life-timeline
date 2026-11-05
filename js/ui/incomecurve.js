@@ -21,9 +21,9 @@ function loadChart() {
 }
 
 // 各曲線的角色：顏色欄位（palette 的鍵）與期末金額標籤的垂直位移
-const ROLE = { main: ['line', 16], base: ['base', -8], net: ['net', 30], adv: ['adv', 44], pay: ['pay', 58] };
+const ROLE = { main: ['line', 16], base: ['base', -8], net: ['net', 30], pay: ['pay', 44] };
 
-const PRINT_PAL = { ink: '#000000', muted: '#333333', grid: '#bdbdbd', line: '#1a3f8a', base: '#1c7c4f', net: '#8a1f2d', adv: '#4b2a85', pay: '#8a4300', coin: '#5a3a00', surface: '#ffffff' };
+const PRINT_PAL = { ink: '#000000', muted: '#333333', grid: '#bdbdbd', line: '#1a3f8a', base: '#1c7c4f', net: '#8a1f2d', pay: '#8a4300', coin: '#5a3a00', surface: '#ffffff' };
 
 function applyPalette(c, pal) {
   const o = c.options;
@@ -38,7 +38,7 @@ function palette() {
   if (printing) return PRINT_PAL;
   const cs = getComputedStyle(document.documentElement);
   const v = (n) => cs.getPropertyValue(n).trim();
-  return { ink: v('--ink'), muted: v('--muted'), grid: v('--grid'), line: v('--curve-main'), base: v('--curve-base'), net: v('--curve-net'), adv: v('--curve-adv'), pay: v('--curve-pay'), coin: v('--coin'), surface: v('--surface') };
+  return { ink: v('--ink'), muted: v('--muted'), grid: v('--grid'), line: v('--curve-main'), base: v('--curve-base'), net: v('--curve-net'), pay: v('--curve-pay'), coin: v('--coin'), surface: v('--surface') };
 }
 
 // 垂直虛線（今天、退休）與各曲線在退休點的金額
@@ -87,13 +87,8 @@ export async function renderCurve(canvas, p) {
   }
   if (p.adv) {
     const sp = { monthly: p.monthly, startAge: p.startAge, stopAge: p.stopAge };
-    const data = incomeSeries(sp, p.xFrom, p.xTo).map((d) => ({ x: d.x, y: advancedNet(p.adv.data, p.adv.todayYm, p.today, d.x, d.y) }));
-    datasets.push({ label: `扣除生活支出月平均 ${money(p.adv.data.livingMonthlyAvg)} 與借款${p.adv.data.pledge ? '、股票質押' : ''}利息後（進階匯入）`, ltlRole: 'adv', data, borderColor: pal.adv, backgroundColor: pal.adv, borderWidth: 3, borderDash: [14, 4, 2, 4], pointRadius: 0, pointHoverRadius: 4, fill: false });
-  }
-  if (p.adv) {
-    const sp = { monthly: p.monthly, startAge: p.startAge, stopAge: p.stopAge };
     const data = incomeSeries(sp, p.xFrom, p.xTo).map((d) => ({ x: d.x, y: advancedNet(p.adv.data, p.adv.todayYm, p.today, d.x, d.y, { withPrincipal: true }) }));
-    datasets.push({ label: `扣除生活支出月平均與實際月繳（本金＋利息${p.adv.data.pledge ? '，含股票質押利息' : ''}）後（進階匯入）`, ltlRole: 'pay', data, borderColor: pal.pay, backgroundColor: pal.pay, borderWidth: 3, borderDash: [3, 3], pointRadius: 0, pointHoverRadius: 4, fill: false });
+    datasets.push({ label: `扣除生活支出月平均與每月還款（本金＋利息${p.adv.data.pledge ? '，股票質押只計利息' : ''}）後（進階匯入）`, ltlRole: 'pay', data, borderColor: pal.pay, backgroundColor: pal.pay, borderWidth: 3, borderDash: [3, 3], pointRadius: 0, pointHoverRadius: 4, fill: false });
   }
   datasets.forEach((ds, i) => { if (!ds.ltlRole) ds.ltlRole = i === 0 ? 'main' : 'base'; });
   const base = {
@@ -143,7 +138,7 @@ export function curveTable(tableEl, p) {
   const head = document.createElement('tr'); head.append(th('年齡（歲）'), th('從現在開始（NT$）'));
   if (base) head.append(th('18 歲起領基本工資（NT$）'));
   if (p.expense > 0) head.append(th('扣除每月消費後（NT$）'));
-  if (p.adv) head.append(th('扣除生活支出與借款利息後（進階，NT$）'), th('扣除生活支出與實際月繳後（進階，NT$）'));
-  const body = rows.map((d) => { const tr = document.createElement('tr'); tr.append(td(ageText(d.x)), td(money(d.y))); if (base) tr.append(td(money(d.b))); if (p.expense > 0) tr.append(td(money(d.n))); if (p.adv) tr.append(td(money(advancedNet(p.adv.data, p.adv.todayYm, p.today, d.x, d.y))), td(money(advancedNet(p.adv.data, p.adv.todayYm, p.today, d.x, d.y, { withPrincipal: true })))); return tr; });
+  if (p.adv) head.append(th('扣除生活支出與每月還款（本金＋利息）後（進階，NT$）'));
+  const body = rows.map((d) => { const tr = document.createElement('tr'); tr.append(td(ageText(d.x)), td(money(d.y))); if (base) tr.append(td(money(d.b))); if (p.expense > 0) tr.append(td(money(d.n))); if (p.adv) tr.append(td(money(advancedNet(p.adv.data, p.adv.todayYm, p.today, d.x, d.y, { withPrincipal: true })))); return tr; });
   tableEl.replaceChildren(head, ...body);
 }

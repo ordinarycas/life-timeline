@@ -5,7 +5,7 @@ import { money, signedMoney, years1 } from '../core/format.js';
 const total = (v) => (v < 0 ? `－${money(-v)}` : money(v));
 const KIND_CLASS = { total: 'wf-total', pos: 'wf-pos', neg: 'wf-neg' };
 
-export function renderAssets(els, a, monthly, fromAdv = false) {
+export function renderAssets(els, a, monthly, fromAdv = false, loans = null) {
   const { wrap, verdict, kpi, water, table, note } = els;
   clear(kpi); clear(water); clear(table);
   const item = (label, value, sub, cls = '') => h('div', { class: cls }, h('dt', { text: label }), h('dd', {}, value, sub ? h('span', { class: 'sub', text: sub }) : null));
@@ -50,6 +50,7 @@ export function renderAssets(els, a, monthly, fromAdv = false) {
       h('td', { class: 'num', text: s.kind === 'total' ? total(s.value) : signedMoney(s.sign === '－' ? -s.value : s.value) })))),
   );
   note.textContent = `算法：人生最低收入（${money(monthly)} × 到退休的月數）＋ 資產 － 借款本金與你估的利息 － 每月固定支出 × 剩餘月數。金額固定、以今天的新台幣計，不含通膨、投資報酬、退休金、勞保年金與自住不動產的居住價值；資產只計你填的項目。這是粗略的對照，不是理財或投資建議。`;
+  if (loans) note.textContent += ` 其中你新增的貸款本金 ${money(loans.principal)}、預估利息 ${money(loans.interest)}（本息平均攤還，每月合計還款約 ${money(loans.monthly)}）。`;
   if (fromAdv) note.textContent += ' 本次借款（含股票質押）、利息、每月支出與投資現值來自「進階」匯入的資料：生活支出為 12 個月平均，股票質押假設本金不還、利息持續到餘命結束。';
   wrap.hidden = false;
 }

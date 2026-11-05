@@ -2,6 +2,7 @@
 import { validateField, DEFAULTS, HAVE_IDS } from '../data/prefs.js';
 import { WAGE } from '../data/wage.js';
 import { money } from '../core/format.js';
+import { initLoans } from './loans.js';
 
 const $ = (id) => document.getElementById(id);
 const FIELDS = [
@@ -14,6 +15,8 @@ const SELECTS = [['wage', 'f-wage'], ['service', 'f-service'], ['serviceType', '
 export function initSettings({ prefs, getToday, onChange, onClear }) {
   const state = { prefs };
   const ctx = () => ({ todayIso: getToday() });
+
+  const loansUi = initLoans({ list: $('loan-list'), addBtn: $('loan-add'), onChange: (loans) => { if (JSON.stringify(loans) !== JSON.stringify(state.prefs.loans)) commit('loans', loans); } });
 
   function fill() {
     const p = state.prefs;
@@ -30,6 +33,7 @@ export function initSettings({ prefs, getToday, onChange, onClear }) {
     }
     for (const id of HAVE_IDS) $(`f-have-${id}`).checked = p.have.includes(id);
     $('f-use-adv').checked = p.useAdv;
+    loansUi.set(p.loans);
     $('f-kid').checked = p.kid;
     $('f-kid-age').value = String(p.kidAge);
     $('f-service').value = p.service;

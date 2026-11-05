@@ -24,7 +24,7 @@
 <main id="main" tabindex="-1">
   <section class="block" aria-labelledby="adv-title">
     <h1 id="adv-title" class="block-title">匯入支出與借款（進階）</h1>
-    <p class="lead">把你的資產負債表 Excel 轉成 JSON 後匯入，首頁的「累積收入曲線」會多一條線：從今天起每月扣掉<strong>生活支出的 12 個月平均</strong>（往後一直推算），再加上 Excel 算出的<strong>每月借款利息</strong>（銀行信用貸款、循環額度、保單借款）與<strong>股票質押利息</strong>。</p>
+    <p class="lead">把你的資產負債表 Excel 轉成 JSON 後匯入，首頁的「累積收入曲線」會多一條線：從今天起每月扣掉<strong>生活支出的 12 個月平均</strong>（往後一直推算），再扣掉每月還款：銀行信用貸款、循環額度、保單借款的<strong>本金＋利息</strong>，以及股票質押的利息（質押本金不還）。</p>
     <details class="card" open>
       <summary><span class="sum-title">怎麼轉出 JSON</span></summary>
       <ol>
@@ -49,7 +49,7 @@
     </div>
     <h2 class="sub-title">目前的資料</h2>
     <div id="adv-summary"></div>
-    <p class="note">曲線只扣「利息」：還本金是把負債還掉，不算消費。生活支出假設每月固定、不含物價上漲。資料只存在這個瀏覽器，不會上傳。本頁是規劃參考，不是財務建議。</p>
+    <p class="note">曲線扣的是實際每月還款（本金＋利息）。生活支出假設每月固定、不含物價上漲。資料只存在這個瀏覽器，不會上傳。本頁是規劃參考，不是財務建議。</p>
   </section>
 </main>
 <script type="module" src="js/advanced.js"></script>

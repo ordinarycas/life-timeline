@@ -21,7 +21,7 @@ function render() {
     h('dl', { class: 'kpi' },
       card('生活支出（每月平均）', money(adv.livingMonthlyAvg)),
       card('今天起貸款利息合計', money(s.interest), s.lastYm ? `信貸、循環額度、保單借款，最後一期 ${s.lastYm}` : '沒有未來的借款'),
-      card('今天起借款本金合計', money(s.principal), '還本金是把負債還掉，曲線只扣利息'),
+      card('今天起借款本金合計', money(s.principal), '曲線每月扣本金＋利息'),
     ),
     s.loans.length || s.pledge ? h('div', { class: 'table-wrap' }, h('table', { class: 'data-table' },
       h('caption', { text: '目前的借款（只列類型，不含銀行名稱）' }),
@@ -153,3 +153,10 @@ try {
 } catch { /* 維持預設淺色 */ }
 render();
 renderMarket();
+
+// 舊版快取：Service Worker 先給舊檔、背景才更新。進階頁載入時主動檢查更新，新版接手後自動重新載入一次。
+if ('serviceWorker' in navigator) {
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded && document.getElementById('adv-file').value === '') { reloaded = true; location.reload(); } });
+  navigator.serviceWorker.getRegistration().then((r) => r?.update()).catch(() => {});
+}

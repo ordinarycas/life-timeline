@@ -204,6 +204,12 @@
         <div class="field"><label for="f-debt-interest">預估還要付的利息總額（NT$）</label><input type="number" id="f-debt-interest" inputmode="numeric" min="0" step="1" aria-describedby="err-debt-interest"><p class="err" id="err-debt-interest" role="alert" hidden></p></div>
         <div class="field"><label for="f-expense">目前每月固定生活支出（NT$）</label><input type="number" id="f-expense" inputmode="numeric" min="0" step="1" aria-describedby="err-expense"><p class="err" id="err-expense" role="alert" hidden></p></div>
       </div>
+      <fieldset class="group" id="grp-loans">
+        <legend>新增貸款（選填，可新增多筆）</legend>
+        <p class="hint">填借款本金、期數（月）、年利率（%），以本息平均攤還計算，並加進下方「尚未償還的借款」（本金＋預估利息）。</p>
+        <div id="loan-list"></div>
+        <button type="button" class="btn" id="loan-add">＋ 新增一筆貸款</button>
+      </fieldset>
       <div class="field field-check"><input type="checkbox" id="f-use-adv"><label for="f-use-adv">代入「進階」匯入的資料（生活支出月平均、銀行信貸／循環額度／保單借款、股票質押與持股現值，會取代上面手填的借款、支出與投資）</label></div>
       <p class="hint" id="adv-hint"></p>
       <p class="hint">資產與借款只存在這個瀏覽器，不會傳出去。利息請自己估（例如依還款表加總），本站不假設利率。</p>
@@ -216,7 +222,7 @@
       <dl class="kpi" id="kpi-money"></dl>
       <p class="note" id="kpi-zero" hidden>月收入是 0，請選擇基本工資或填入自訂金額。</p>
       <figure class="curve" id="curve-fig">
-        <figcaption id="curve-cap">累積收入曲線（月收入固定、不含調薪與通膨；有填每月生活支出時，多一條扣除消費後的虛線；在「進階」匯入資料後，再多兩條：扣除生活支出與借款利息、扣除生活支出與實際月繳）</figcaption>
+        <figcaption id="curve-cap">累積收入曲線（月收入固定、不含調薪與通膨；有填每月生活支出時，多一條扣除消費後的虛線；在「進階」匯入資料後，再多一條：扣除生活支出與每月還款（本金＋利息））</figcaption>
         <div class="curve-box" id="curve-box"><canvas id="curve" role="img" aria-label="累積收入曲線"></canvas></div>
         <p class="note" id="curve-empty" hidden>累積收入曲線：目前沒有可畫的收入（月收入為 0 或已過退休年齡）。</p>
         <details class="curve-table" id="curve-table-wrap">

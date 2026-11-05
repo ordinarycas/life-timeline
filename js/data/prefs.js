@@ -1,5 +1,6 @@
 // 偏好設定：驗證、夾限、存取（localStorage `ltl.prefs.v1`）。性別與生日只存在這個瀏覽器，不會傳到任何地方。
 import { isValidIso } from '../core/clock.js';
+import { MAX_LOANS, validateLoan } from '../core/loans.js';
 import { parseYoutubeId, watchUrl } from '../core/youtube.js';
 import { SERVICE_TYPES, SERVICE_AGE_MIN, SERVICE_AGE_MAX } from '../core/military.js';
 
@@ -10,7 +11,7 @@ export const PREFS_KEY = 'ltl.prefs.v1';
 export const HINTS_KEY = 'ltl.hints.v1';
 
 export const DEFAULTS = Object.freeze({
-  sex: '', birth: '', have: [], retire: 65, start: 0, kid: false, kidAge: 30, useAdv: false,
+  sex: '', birth: '', have: [], retire: 65, start: 0, kid: false, kidAge: 30, useAdv: false, loans: [],
   wage: 'current', monthly: 0, service: 'auto', serviceAge: 22, serviceType: 'regular', music: 'off', musicUrl: '', theme: 'light',
   assetCash: 0, assetInvest: 0, assetOther: 0, debt: 0, debtInterest: 0, expense: 0,
 });
@@ -51,6 +52,12 @@ export function validateField(key, raw, { todayIso, musicIds = [] } = {}) {
       if (raw === '' || raw == null) return ok(0);
       const n = toInt(raw);
       return n === 0 || inRange(n, 10, 80) ? ok(n) : bad(MSG.start);
+    }
+    case 'loans': {
+      if (!Array.isArray(raw) || raw.length > MAX_LOANS) return bad('貸款資料不正確');
+      const list = [];
+      for (const l of raw) { const v = validateLoan(l); if (!v.ok) return bad(v.error); list.push(v.value); }
+      return ok(list);
     }
     case 'useAdv': return typeof raw === 'boolean' ? ok(raw) : bad('請選擇是否代入進階資料');
     case 'kid': return typeof raw === 'boolean' ? ok(raw) : bad('請選擇是否有小孩');

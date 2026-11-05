@@ -20,6 +20,7 @@ import { renderDetails, jumpToTag, setAllCards } from './ui/details.js';
 import { renderIncome } from './ui/income.js';
 import { initTabs } from './ui/tabs.js';
 import { loadAdvanced, advancedAssetInputs } from './core/advanced.js';
+import { loansTotal } from './core/loans.js';
 import { renderCurve, curveTable, setPrintMode, destroyCurve } from './ui/incomecurve.js';
 import { initPlayer } from './ui/player.js';
 import { initHints } from './ui/hints.js';
@@ -103,8 +104,11 @@ function drawResults() {
   const useAdv = !!(prefs.useAdv && adv);
   $('f-use-adv').disabled = !adv;
   $('adv-hint').textContent = adv ? '' : '還沒有匯入進階資料。到「進階」頁匯入後，這裡就能勾選。';
-  const assetPrefs = useAdv ? { ...prefs, ...advancedAssetInputs(adv, todayTaipei().slice(0, 7), inc.lifeMonths) } : prefs;
-  if (hasAssetInput(assetPrefs)) renderAssets(assetEls, computeAssets({ income: inc.income, lifeMonths: inc.lifeMonths, monthly }, assetPrefs), monthly, useAdv);
+  const base0 = useAdv ? { ...prefs, ...advancedAssetInputs(adv, todayTaipei().slice(0, 7), inc.lifeMonths) } : prefs;
+  // 使用者自行新增的貸款：本金與預估利息加進借款
+  const lt = loansTotal(prefs.loans);
+  const assetPrefs = lt.principal > 0 ? { ...base0, debt: base0.debt + lt.principal, debtInterest: base0.debtInterest + lt.interest } : base0;
+  if (hasAssetInput(assetPrefs)) renderAssets(assetEls, computeAssets({ income: inc.income, lifeMonths: inc.lifeMonths, monthly }, assetPrefs), monthly, useAdv, lt.principal > 0 ? lt : null);
   else hideAssets(assetEls);
   // 曲線
   const can = monthly > 0 && inc.stopAge > model.age;
