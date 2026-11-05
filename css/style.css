@@ -487,3 +487,22 @@ code { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--
 
 .loan-row { margin: 10px 0; }
 .loan-result.is-bad { color: var(--danger); font-weight: 700; }
+
+/* ---- 資源增減圖：浮動說明與五個等級 ---- */
+.wf-row { cursor: help; }
+.wf-row:hover, .wf-row:focus-visible { background: var(--surface2); }
+.wf-tip { position: fixed; z-index: 60; background: var(--surface); color: var(--ink); border: 2px solid var(--line); box-shadow: 3px 3px 0 var(--line); padding: 8px 10px; font-size: 14px; pointer-events: none; }
+.wf-tip strong { display: block; margin-bottom: 2px; }
+.level { margin: 8px 0 12px; }
+.lv-meter { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.lv-seg { display: flex; flex-direction: column; align-items: center; padding: 4px 2px; border: 2px solid var(--line); background: var(--bg2); color: var(--muted); font-size: 13px; font-weight: 700; }
+.lv-seg b { font-family: var(--font-pixel); font-size: 15px; }
+.lv-seg.is-below { background: var(--surface2); }
+.lv-seg.is-on { color: #2d3047; background: var(--coin); box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--line); }
+.lv-1 .is-on { background: #ffb3b3; }
+.lv-2 .is-on { background: #ffd9a8; }
+.lv-3 .is-on { background: #fff2a8; }
+.lv-4 .is-on { background: #c7ecc9; }
+.lv-5 .is-on { background: #a8e6d6; }
+.lv-head { margin: 10px 0 4px; font-size: 16px; }
+.lv-advice { margin: 4px 0 6px; padding-left: 20px; }

@@ -39,3 +39,53 @@ export function computeAssets(base, p) {
     maxMonthlyExpense: resources / lifeMonths,
   };
 }
+
+/** 五個等級（依「還清借款後的總資源 ÷ 餘命內固定支出」）。門檻是本站自訂的粗略分級，不是財務建議。 */
+export const LEVELS = Object.freeze([
+  { level: 1, name: '缺口', min: -Infinity, summary: '資源撐不到餘命結束，缺口明顯。' },
+  { level: 2, name: '吃緊', min: 0.8, summary: '資源略少於支出，有小幅缺口。' },
+  { level: 3, name: '剛好', min: 1, summary: '資源剛好涵蓋支出，緩衝很薄。' },
+  { level: 4, name: '餘裕', min: 1.25, summary: '資源高於支出，有一些緩衝。' },
+  { level: 5, name: '完美', min: 1.6, summary: '資源明顯高於支出，緩衝充足。' },
+]);
+
+const ADVICE = {
+  1: ['先確認每月支出與借款是否都填對。', '可以從這幾件事試試看：提高月收入、延後退休年齡、降低每月支出、減少或提早還清高利率借款。', '上方可以調整數字，立刻看到等級變化。'],
+  2: ['差一點就能涵蓋。小幅調整就可能補上缺口：每月支出少一點、晚一點退休，或把高利率借款優先還清。', '把「每月最多可花」當作參考上限。'],
+  3: ['剛好涵蓋，代表沒有多餘的緩衝；任何意外支出、收入中斷或物價上漲都可能讓它變成缺口。', '可以先準備緊急預備金，並檢查借款利率與期數。'],
+  4: ['有一些緩衝。可以保留一部分當作緊急預備金，其餘再決定要用在退休準備、投資或提前還款。', '想更保守，可以把物價上漲與收入中斷的情況也試算看看。'],
+  5: ['資源明顯高於支出。可以考慮：提早退休、提高每月可花的金額，或把餘裕分配到投資、保障與提前還款。', '這個結果仍假設金額固定、不含通膨，實際規劃請留一些空間。'],
+};
+
+/**
+ * 依計算結果評等。沒有填每月支出時無法比較，回 null。
+ * ratio = 還清借款後的總資源 ÷ 餘命內固定支出（資源為負數視為缺口）。
+ */
+export function assessAssets(a) {
+  if (!(a.lifeExpense > 0)) return null;
+  const ratio = a.resources / a.lifeExpense;
+  const lv = [...LEVELS].reverse().find((x) => ratio >= x.min) ?? LEVELS[0];
+  const next = LEVELS.find((x) => x.level === lv.level + 1) ?? null;
+  return {
+    level: lv.level, name: lv.name, summary: lv.summary, ratio,
+    advice: ADVICE[lv.level],
+    // 還差多少資源才升到下一級（已是最高級回 null）
+    toNext: next ? Math.max(Math.ceil(next.min * a.lifeExpense - a.resources), 0) : null,
+    nextName: next?.name ?? null,
+    maxMonthlyExpense: a.maxMonthlyExpense,
+  };
+}
+
+/** 資源增減圖每一步的說明（滑過或點選時顯示）。fmt 為金額格式函式。 */
+export function stepHelp(a, monthly, fmt) {
+  return {
+    income: `人生最低收入：每月 ${fmt(monthly)} × 從現在到退休的月數，約 ${fmt(a.income)}。這是只靠目前月收入的保守估計，不含調薪與通膨。`,
+    assets: `你填的存款、投資與其他資產，合計 ${fmt(a.assets)}；資產只計你填的項目（若勾選代入進階資料，投資以匯入的持股現值為準）。`,
+    debts: `尚未償還的借款本金加預估利息，合計 ${fmt(a.debts)}，包含你新增的貸款與（若勾選）進階資料裡的借款。先把它們還清，剩下才是可用的資源。`,
+    resources: `還清借款後的總資源 = 人生最低收入 + 資產 − 借款 = ${fmt(a.resources)}。平均分攤到剩下的 ${a.lifeMonths} 個月，每月約 ${fmt(a.perMonth)}。`,
+    expense: `餘命內固定支出 = 每月 ${fmt(a.expense)} × 剩餘 ${a.lifeMonths} 個月 = ${fmt(a.lifeExpense)}。假設支出不變、不含通膨。`,
+    surplus: a.surplus >= 0
+      ? `扣除支出後還有約 ${fmt(a.surplus)} 的餘裕；每月最多可花約 ${fmt(a.maxMonthlyExpense)} 才不會出現缺口。`
+      : `扣除支出後有約 ${fmt(-a.surplus)} 的缺口；每月最多可花約 ${fmt(Math.max(a.maxMonthlyExpense, 0))} 才不會出現缺口。`,
+  };
+}

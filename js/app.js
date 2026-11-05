@@ -98,7 +98,7 @@ function drawResults() {
     );
   }
   // 資產負債：有填任何一項才顯示
-  const assetEls = { wrap: $('asset-wrap'), verdict: $('asset-verdict'), kpi: $('asset-kpi'), water: $('water'), table: $('asset-table'), note: $('asset-note') };
+  const assetEls = { wrap: $('asset-wrap'), verdict: $('asset-verdict'), kpi: $('asset-kpi'), water: $('water'), table: $('asset-table'), note: $('asset-note'), level: $('asset-level') };
   // 「代入進階資料」：用匯入的借款本金、利息與生活支出月平均取代手填的借款與支出（資產仍用手填）
   const adv = loadAdvanced();
   const useAdv = !!(prefs.useAdv && adv);
