@@ -537,3 +537,9 @@ code { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--
 .code-block { margin: 10px 0; padding: 10px 12px; max-height: 340px; overflow: auto; background: var(--surface2); border: 2px solid var(--line); font-size: 12px; line-height: 1.5; tab-size: 2; }
 .code-block code { background: transparent; padding: 0; white-space: pre; }
 #adv-format .table-wrap { margin-top: 10px; }
+
+/* ---- 放大到 400%：學制橫條每年一格 ---- */
+.yr { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; border-left: 1px solid var(--line); pointer-events: none; box-sizing: border-box; }
+.yr.is-first { border-left: 0; }
+.yr i { font-style: normal; font-size: 11px; line-height: 16px; padding: 0 1px; background: var(--glass); color: var(--ink); white-space: nowrap; }
+.yr.is-reserve i { color: var(--muted); }

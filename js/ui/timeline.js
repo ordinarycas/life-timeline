@@ -3,6 +3,7 @@ import { h, clear, css } from './dom.js';
 import { KINDS } from '../data/tags.js';
 import { ageText, rangeText, money } from '../core/format.js';
 import { BASELINE_WAGE } from '../data/wage.js';
+import { yearCells } from '../data/stages.js';
 import { clampZoom, pinchZoom, ZOOM_MIN, ZOOM_MAX, ZOOM_STEP } from './zoom.js';
 import { BASELINE_AGE } from '../core/lifetime.js';
 
@@ -58,6 +59,7 @@ export function createTimeline(els, cb) {
     const zoom = st.forcedWidth ? 1 : st.zoom;
     const ppy = Math.max((W - PAD * 2) / m.endAge, MIN_PPY) * zoom;
     st.ppy = ppy;
+    st.detail = zoom >= ZOOM_MAX; // 放大到 400%：5 年一條線，學制切成每年一格
     const totalW = Math.ceil(PAD * 2 + ppy * m.endAge);
     const x = (age) => PAD + age * ppy;
     css(els.tl, { width: Math.max(totalW, st.forcedWidth ?? 0) });
@@ -77,7 +79,7 @@ export function createTimeline(els, cb) {
     els.legend.append(h('span', { class: 'lg past' }, h('i'), '已走過／已取得'), h('span', { class: 'lg now' }, h('i'), '進行中／機會'), h('span', { class: 'lg fut' }, h('i'), '尚未到'));
 
     // 刻度
-    for (let a = 0; a <= m.endAge; a += 10) {
+    for (let a = 0; a <= m.endAge; a += st.detail ? 5 : 10) {
       els.decades.append(css(h('div', { class: 'tick' }), { left: x(a), top: RULER_Y, height: totalH - RULER_Y }));
       els.decades.append(css(h('div', { class: 'tick-label', text: `${a}` }), { left: x(a), top: RULER_Y - 2 }));
     }
@@ -176,12 +178,20 @@ export function createTimeline(els, cb) {
       css(btn, { left: x(r.at) - 11, '--c': color });
       leftX = x(r.at) - 11; rightX = x(r.at) + 11;
     } else {
-      const reach = r.ext ? r.ext.to : r.to;
-      const w = Math.max((reach - r.from) * (x(1) - x(0)), 26);
+      const yrs = st.detail ? yearCells(r) : null;
+      const step = x(1) - x(0);
+      const reach = (r.ext ? r.ext.to : r.to) + (yrs ? yrs.reserve.length : 0);
+      const w = Math.max((reach - r.from) * step, 26);
       btn = h('button', { type: 'button', class: `bar ${cls}`, 'aria-label': aria, dataset: { id: r.id } });
-      const mainW = r.ext ? Math.max(((r.to - r.from) / (reach - r.from)) * w, 4) : w;
+      const mainW = r.ext ? Math.max(((r.to - r.from) / (reach - r.from)) * w, 4) : yrs?.reserve.length ? (r.to - r.from) * step : w;
       btn.append(css(h('span', { class: 'fill' }), { width: mainW }));
-      if (r.ext) btn.append(css(h('span', { class: 'ext' }), { width: w - mainW }));
+      if (r.ext || yrs?.reserve.length) btn.append(css(h('span', { class: 'ext' }), { width: w - mainW }));
+      if (yrs) {
+        [...yrs.labels, ...yrs.reserve].forEach((t, i) => {
+          const reserve = i >= yrs.labels.length;
+          btn.append(css(h('span', { class: `yr${i === 0 ? ' is-first' : ''}${reserve ? ' is-reserve' : ''}`, 'aria-hidden': 'true' }, h('i', { text: t })), { left: i * step, width: step }));
+        });
+      }
       css(btn, { left: x(r.from), width: w, '--c': color });
       leftX = x(r.from); rightX = x(r.from) + w;
     }
