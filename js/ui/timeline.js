@@ -4,6 +4,7 @@ import { KINDS } from '../data/tags.js';
 import { ageText, rangeText, money } from '../core/format.js';
 import { BASELINE_WAGE } from '../data/wage.js';
 import { yearCells } from '../data/stages.js';
+import { BANDS, bandText, bandMode, bandEnds } from '../data/bands.js';
 import { clampZoom, pinchZoom, ZOOM_MIN, ZOOM_MAX, ZOOM_STEP } from './zoom.js';
 import { BASELINE_AGE } from '../core/lifetime.js';
 
@@ -11,7 +12,7 @@ const LEG = 30;          // 圖例高度
 const FLAG_Y = LEG + 2;  // 「現在」「壽命」旗標
 const BAR_Y = LEG + 26;  // 主橫條
 const RULER_Y = LEG + 54;
-const LANES_Y = LEG + 76;
+const LANES_Y = LEG + 98; // 刻度下方多一排給年齡階段標示
 const ROW_H = 32;
 const PAD = 16;
 const MIN_PPY = 9;       // 每年最少像素，不夠就在地圖內橫向捲動
@@ -20,7 +21,7 @@ const STATE_TEXT = { past: '已走過', now: '進行中', future: '尚未到' };
 const SEG_TEXT = { walked: '已走過', work: '工作期（至退休）', retired: '退休後' };
 
 export const KIND_VAR = Object.freeze({
-  money: '--k-money', stage: '--k-stage', work: '--k-work', license: '--k-license', exam: '--k-exam', retire: '--k-retire', service: '--k-service', risk: '--k-risk', kids: '--k-kids',
+  money: '--k-money', health: '--k-health', stage: '--k-stage', work: '--k-work', license: '--k-license', exam: '--k-exam', retire: '--k-retire', service: '--k-service', risk: '--k-risk', kids: '--k-kids',
 });
 
 export function rowRange(row) {
@@ -82,6 +83,17 @@ export function createTimeline(els, cb) {
     for (let a = 0; a <= m.endAge; a += st.detail ? 5 : 10) {
       els.decades.append(css(h('div', { class: 'tick' }), { left: x(a), top: RULER_Y, height: totalH - RULER_Y }));
       els.decades.append(css(h('div', { class: 'tick-label', text: `${a}` }), { left: x(a), top: RULER_Y - 2 }));
+    }
+    // 三個年齡階段：淡色底貫穿整張圖，標示放在刻度下方（窄的時候只寫數字）
+    for (const b of BANDS) {
+      if (b.from >= m.endAge) continue;
+      const bw = (Math.min(b.to, m.endAge) - b.from) * ppy;
+      els.decades.append(css(h('div', { class: 'band' }), { left: x(b.from), width: bw, top: RULER_Y + 14, height: totalH - RULER_Y - 14 }));
+      const mode = bandMode(bw);
+      if (mode !== 'ends') els.decades.append(css(h('div', { class: 'band-chip', text: bandText(b, mode === 'short') }), { left: x(b.from), width: bw, top: RULER_Y + 18 }));
+    }
+    if (bandMode((BANDS[0].to - BANDS[0].from) * ppy) === 'ends') {
+      for (const e of bandEnds()) if (e.at <= m.endAge) els.decades.append(css(h('div', { class: 'band-chip' , text: e.text }), { left: x(e.at) - 14, width: 28, top: RULER_Y + 18 }));
     }
     // 主橫條
     for (const s of m.bars) {
@@ -187,9 +199,10 @@ export function createTimeline(els, cb) {
       btn.append(css(h('span', { class: 'fill' }), { width: mainW }));
       if (r.ext || yrs?.reserve.length) btn.append(css(h('span', { class: 'ext' }), { width: w - mainW }));
       if (yrs) {
+        const span = yrs.span ?? 1;
         [...yrs.labels, ...yrs.reserve].forEach((t, i) => {
           const reserve = i >= yrs.labels.length;
-          btn.append(css(h('span', { class: `yr${i === 0 ? ' is-first' : ''}${reserve ? ' is-reserve' : ''}`, 'aria-hidden': 'true' }, h('i', { text: t })), { left: i * step, width: step }));
+          btn.append(css(h('span', { class: `yr${i === 0 ? ' is-first' : ''}${reserve ? ' is-reserve' : ''}`, 'aria-hidden': 'true' }, h('i', { text: t })), { left: i * step * span, width: step * span }));
         });
       }
       css(btn, { left: x(r.from), width: w, '--c': color });

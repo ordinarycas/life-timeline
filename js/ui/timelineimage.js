@@ -2,6 +2,7 @@
 import { KINDS } from '../data/tags.js';
 import { ageText } from '../core/format.js';
 import { BASELINE_AGE } from '../core/lifetime.js';
+import { BANDS, bandText } from '../data/bands.js';
 import { KIND_VAR } from './timeline.js';
 
 const FONT = '"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,-apple-system,"Segoe UI",sans-serif';
@@ -38,7 +39,7 @@ export function drawTimelineImage(model, { title, sub, scale = 2 }) {
     lg.push({ ...it, x: lx, y: ly }); lx += w;
   }
   const top0 = ly + 22;
-  const FLAG_Y = top0; const BAR_Y = top0 + 26; const RULER_Y = top0 + 56; const LANES_Y = top0 + 78;
+  const FLAG_Y = top0; const BAR_Y = top0 + 26; const RULER_Y = top0 + 56; const LANES_Y = top0 + 100;
   const lanes = (hasMile ? 1 : 0) + rows.length;
   const H = LANES_Y + lanes * ROW_H + 40;
 
@@ -70,6 +71,16 @@ export function drawTimelineImage(model, { title, sub, scale = 2 }) {
   for (let a = 0; a <= model.endAge; a += 10) {
     g.strokeStyle = C.grid; g.lineWidth = 1; g.beginPath(); g.moveTo(x(a) + 0.5, RULER_Y + 8); g.lineTo(x(a) + 0.5, LANES_Y + lanes * ROW_H); g.stroke();
     text(String(a), x(a), RULER_Y, 11, C.muted, 'center');
+  }
+  // 年齡階段
+  for (const b of BANDS) {
+    if (b.from >= model.endAge) continue;
+    const bx = x(b.from); const bw = (Math.min(b.to, model.endAge) - b.from) * ppy;
+    g.fillStyle = 'rgba(255,200,87,0.24)'; g.fillRect(bx, RULER_Y + 14, bw, LANES_Y + lanes * ROW_H - RULER_Y - 14);
+    g.strokeStyle = C.muted; g.lineWidth = 1; g.setLineDash([3, 3]);
+    for (const lx2 of [bx + 0.5, bx + bw - 0.5]) { g.beginPath(); g.moveTo(lx2, RULER_Y + 14); g.lineTo(lx2, LANES_Y + lanes * ROW_H); g.stroke(); }
+    g.setLineDash([]);
+    text(bandText(b, bw < 64), bx + bw / 2, RULER_Y + 27, 11, C.ink, 'center', 700);
   }
   // 主橫條
   for (const s of model.bars) {

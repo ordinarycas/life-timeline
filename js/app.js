@@ -195,7 +195,15 @@ function drawTable() {
   for (const r of model.rows) t.append(h('tr', {}, h('td', { text: r.label }), h('td', { text: r.tag.kind }), h('td', { text: r.point ? `${ageText(r.at)} 歲` : `${ageText(r.from)}–${ageText(r.to)} 歲` }), h('td', { text: stateText(r.state, r.tag) })));
 }
 
+function syncHealth() {
+  const b = $('tl-health');
+  b.setAttribute('aria-pressed', String(!!prefs.health));
+  b.textContent = prefs.health ? '健康參考：顯示' : '健康參考：隱藏';
+}
+$('tl-health').addEventListener('click', () => { prefs = { ...prefs, health: !prefs.health }; save(); render(); });
+
 function render() {
+  syncHealth();
   const todayIso = todayTaipei();
   model = buildTimeline(prefs, todayIso);
   kpi = computeKpi(model, prefs);

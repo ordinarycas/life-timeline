@@ -7,6 +7,7 @@ import { TAGS, KIND_ORDER } from '../data/tags.js';
 import { BASELINE_WAGE } from '../data/wage.js';
 import { BASELINE_AGE } from './lifetime.js';
 import { loanCost } from './loans.js';
+import { ORGANS, accelFrom, accelText } from '../data/health.js';
 import { money } from './format.js';
 
 /** 沒填性別或生日時顯示的示範資料：男、30 歲。示範資料不寫入偏好設定。 */
@@ -61,6 +62,29 @@ export function buildTimeline(prefs, todayIso, tags = TAGS) {
       short: `貸款 ${money(mg.amount)}、年利率 ${mg.rate}%，本息平均攤還每月約 ${money(c.monthly)}，${Math.round((start + mg.years) * 10) / 10} 歲還清。這是你在進階設定填的資料，不是法規。`,
     }, age, endAge);
     if (row) rows.push(row);
+  }
+  // 職涯／人生探索：24–36 歲，每四年一個階段（24–28、29–32、33–36）。本站規劃用的分段，不是標籤資料
+  {
+    const tag = { id: 'career-explore', label: '職涯／人生探索', kind: 'work', audience: 'all', user: true, short: '', detail: [], sources: [] };
+    const row = normalize(tag, {
+      from: 24, to: 36,
+      short: '24 歲起每四年一個階段：24–28、29–32、33–36 歲。放大時間軸到 400% 會分成三個階段。這是本站規劃用的分段，不是法規。',
+    }, age, endAge);
+    if (row) rows.push(row);
+  }
+  // 健康參考（選用）：每個器官一條——開始變化到加速變化是橫條，加速變化之後畫成斜線延伸到壽命。非官方資料，不是標籤。
+  if (eff.health) {
+    for (const o of ORGANS) {
+      if (o.audience !== 'all' && o.audience !== sex) continue;
+      const a0 = accelFrom(o);
+      const tag = { id: `health-${o.id}`, label: o.label, kind: 'health', audience: o.audience, user: true, short: '', detail: [], sources: [] };
+      const row = normalize(tag, {
+        from: o.onset, to: a0, ext: { from: a0, to: endAge },
+        short: `平均約 ${o.onset} 歲開始變化，約 ${accelText(o)}開始加速變化（斜線）。民間媒體整理、非官方，不是醫療建議。`,
+        extra: o.common ? `圖表標示加速變化後較常見：${o.common}。` : null,
+      }, age, endAge);
+      if (row) rows.push(row);
+    }
   }
   rows.sort((a, b) => a.start - b.start || KIND_ORDER.indexOf(a.tag.kind) - KIND_ORDER.indexOf(b.tag.kind) || (a.tag.id < b.tag.id ? -1 : 1));
 

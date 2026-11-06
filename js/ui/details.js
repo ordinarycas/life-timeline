@@ -5,6 +5,7 @@ import { TAGS, KINDS, appliesTo } from '../data/tags.js';
 import { rowRange } from './timeline.js';
 import { LIFE_TABLE } from '../core/lifetime.js';
 import { WAGE_SOURCE } from '../data/wage.js';
+import { HEALTH_SOURCE } from '../data/health.js';
 
 const link = (s) => h('a', { href: s.url, target: '_blank', rel: 'noopener noreferrer', text: `${s.publisher}《${s.title}》` });
 
@@ -36,6 +37,7 @@ export function renderDetails(listEl, generalEl, model) {
     h('li', {}, '平均餘命：', h('a', { href: LIFE_TABLE.url, target: '_blank', rel: 'noopener noreferrer', text: LIFE_TABLE.source }), '。每 10 歲一點，中間以線性內插；它是同年齡、同性別人口的平均，不是對你個人壽命的預測。'),
     h('li', {}, '基本工資：', h('a', { href: WAGE_SOURCE.url, target: '_blank', rel: 'noopener noreferrer', text: `${WAGE_SOURCE.publisher}《${WAGE_SOURCE.title}》` }), `（查閱 ${WAGE_SOURCE.accessed}）。2027 年數字為審議會決議，尚待行政院核定。`),
     h('li', {}, '收入算法：月收入 × 12 × 到退休的年數，以今天的新台幣計、稅前，不含調薪、通膨與退休金。'),
+    h('li', {}, '健康參考（選用，預設隱藏；不是官方資料）：各器官平均開始變化與加速變化的年齡取自民間媒體', h('a', { href: HEALTH_SOURCE.url, target: '_blank', rel: 'noopener noreferrer', text: `${HEALTH_SOURCE.publisher}《${HEALTH_SOURCE.title}》` }), `（輔助參考，查閱 ${HEALTH_SOURCE.accessed}）。文中沒有列出研究出處，僅供參考，不是醫療建議；身體狀況請諮詢醫師。`),
     h('li', {}, '育兒區間以 18 年計（《民法》第 12 條成年年齡），為本站簡化假設。'),
   );
 }
