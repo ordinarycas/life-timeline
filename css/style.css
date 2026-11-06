@@ -434,7 +434,10 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 8px; }
 @media (max-height: 520px) and (orientation: landscape) {
   .top { padding: 4px 12px; }
   .stage { height: auto; min-height: calc(100svh - 52px); grid-template-rows: auto auto auto minmax(0, 1fr); padding: 6px 10px; }
-  .stage-view { min-height: 180px; }
+  .stage-view { display: block; min-height: 0; }
+  /* 橫向手機：圖表不在自己裡面上下捲動（否則手指滑在圖上就捲不動頁面）；整張圖展開，由頁面捲動，只保留左右拖曳 */
+  .stage-map { height: auto; overflow-y: hidden; overflow-x: auto; }
+  .stage-dock { position: sticky; left: auto; right: auto; bottom: 6px; margin-top: 6px; }
   .stage-sub, .demo-note { font-size: 12px; }
   .infocard { max-height: 90px; min-height: 0; padding: 4px 10px; }
   .player { padding: 4px 8px; width: 230px; }
