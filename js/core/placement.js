@@ -4,6 +4,10 @@ import { servicePlan } from './military.js';
 import { yearsAgo } from './clock.js';
 import { DEFAULTS } from '../data/prefs.js';
 import { TAGS, KIND_ORDER } from '../data/tags.js';
+import { BASELINE_WAGE } from '../data/wage.js';
+import { BASELINE_AGE } from './lifetime.js';
+import { loanCost } from './loans.js';
+import { money } from './format.js';
 
 /** 沒填性別或生日時顯示的示範資料：男、30 歲。示範資料不寫入偏好設定。 */
 export const DEMO = Object.freeze({ sex: 'male', yearsOld: 30 });
@@ -46,6 +50,18 @@ export function buildTimeline(prefs, todayIso, tags = TAGS) {
     const row = normalize(tag, pos, age, endAge, (eff.have ?? []).includes(tag.id));
     if (row) rows.push(row);
   }
+  // 使用者自訂的房貸：畫成一條「財務」橫條（不是標籤資料，沒有官方來源）
+  const mg = eff.mortgage;
+  if (mg) {
+    const start = mg.start > 0 ? mg.start : age;
+    const c = loanCost({ principal: mg.amount, months: mg.years * 12, rate: mg.rate });
+    const tag = { id: 'mortgage', label: '房貸', kind: 'money', audience: 'all', user: true, short: '', detail: [], sources: [] };
+    const row = normalize(tag, {
+      from: start, to: start + mg.years, label: `房貸（${mg.years} 年）`,
+      short: `貸款 ${money(mg.amount)}、年利率 ${mg.rate}%，本息平均攤還每月約 ${money(c.monthly)}，${Math.round((start + mg.years) * 10) / 10} 歲還清。這是你在進階設定填的資料，不是法規。`,
+    }, age, endAge);
+    if (row) rows.push(row);
+  }
   rows.sort((a, b) => a.start - b.start || KIND_ORDER.indexOf(a.tag.kind) - KIND_ORDER.indexOf(b.tag.kind) || (a.tag.id < b.tag.id ? -1 : 1));
 
   // 已走過或已取得的收進「已走過」；還有機會的（含尚未取得的）留在主畫面
@@ -56,6 +72,7 @@ export function buildTimeline(prefs, todayIso, tags = TAGS) {
     // 主橫條三段：已走過／退休前工作期／退休後（長度為 0 的段落省略）
     bars: segments(age, endAge, retire),
     rows, past, live,
+    milestones: milestones(stop, endAge),
     pastTo: past.reduce((m, r) => Math.max(m, r.end), 0),
   };
 }
@@ -97,4 +114,11 @@ function normalize(tag, pos, age, endAge, owned = false) {
   const reach = ext ? ext.to : to; // 有延伸段時，延伸段結束前都不算「已走過」
   const state = stateFor(tag, reach <= age ? 'past' : from <= age ? 'now' : 'future', owned);
   return { tag, id: tag.id, label, short, extra: pos.extra ?? null, point: false, from, to, start: from, end: reach, state, ext, owned };
+}
+
+/** 從 18 歲起只領基本工資，累積到 100 萬、500 萬、1000 萬、1500 萬的年齡（到不了的省略）。 */
+export const MILESTONES = Object.freeze([1_000_000, 5_000_000, 10_000_000, 15_000_000]);
+export function milestones(stopAge, endAge, wage = BASELINE_WAGE) {
+  if (!(wage > 0)) return [];
+  return MILESTONES.map((amount) => ({ amount, age: BASELINE_AGE + amount / (wage * 12) })).filter((m) => m.age <= Math.min(stopAge, endAge));
 }

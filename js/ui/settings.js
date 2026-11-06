@@ -3,6 +3,7 @@ import { validateField, DEFAULTS, HAVE_IDS } from '../data/prefs.js';
 import { WAGE } from '../data/wage.js';
 import { money } from '../core/format.js';
 import { initLoans } from './loans.js';
+import { validateMortgage, loanCost } from '../core/loans.js';
 
 const $ = (id) => document.getElementById(id);
 const FIELDS = [
@@ -34,6 +35,11 @@ export function initSettings({ prefs, getToday, onChange, onClear }) {
     for (const id of HAVE_IDS) $(`f-have-${id}`).checked = p.have.includes(id);
     $('f-use-adv').checked = p.useAdv;
     loansUi.set(p.loans);
+    const mg = p.mortgage;
+    $('f-mg-amount').value = mg ? String(mg.amount) : '';
+    $('f-mg-rate').value = mg ? String(mg.rate) : '';
+    $('f-mg-years').value = mg ? String(mg.years) : '';
+    $('f-mg-start').value = mg && mg.start ? String(mg.start) : '';
     $('f-kid').checked = p.kid;
     $('f-kid-age').value = String(p.kidAge);
     $('f-service').value = p.service;
@@ -94,6 +100,20 @@ export function initSettings({ prefs, getToday, onChange, onClear }) {
   for (const id of HAVE_IDS) {
     $(`f-have-${id}`).addEventListener('change', () => commit('have', HAVE_IDS.filter((x) => $(`f-have-${x}`).checked)));
   }
+  const MG_IDS = ['f-mg-amount', 'f-mg-rate', 'f-mg-years', 'f-mg-start'];
+  function mortgageChange() {
+    const [amount, rate, years, start] = MG_IDS.map((id) => $(id).value);
+    const err = $('err-mortgage');
+    const setErr = (msg) => { err.hidden = !msg; err.textContent = msg ?? ''; for (const id of MG_IDS) { if (msg) $(id).setAttribute('aria-invalid', 'true'); else $(id).removeAttribute('aria-invalid'); } };
+    if (!amount && !rate && !years && !start) { setErr(null); if (state.prefs.mortgage !== null) commit('mortgage', null); return; }
+    const v = validateMortgage({ amount, rate: rate === '' ? 0 : rate, years, start });
+    if (!v.ok) { setErr(v.error); return; }
+    setErr(null);
+    const c = loanCost({ principal: v.value.amount, months: v.value.years * 12, rate: v.value.rate });
+    $('mortgage-result').textContent = `每月還款約 ${money(c.monthly)}（本金＋利息），總利息約 ${money(c.interest)}。會在時間軸上畫出房貸的年限，並把剩餘的本金與預估利息算進下方「資產與負債」的借款。`;
+    if (JSON.stringify(v.value) !== JSON.stringify(state.prefs.mortgage)) commit('mortgage', v.value);
+  }
+  for (const id of MG_IDS) { $(id).addEventListener('input', mortgageChange); $(id).addEventListener('change', mortgageChange); }
   $('f-use-adv').addEventListener('change', () => commit('useAdv', $('f-use-adv').checked));
   $('f-kid').addEventListener('change', () => commit('kid', $('f-kid').checked));
   $('settings-form').addEventListener('submit', (e) => e.preventDefault());

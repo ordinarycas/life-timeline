@@ -23,6 +23,7 @@
   --k-service: #fe7a7b;
   --k-risk: #f7a8c8;
   --k-kids: #ffd166;
+  --k-money: #8ecae6;
   --curve-main: #2d5aa8;
   --curve-base: #1c7c4f;
   --curve-net: #b03a48;
@@ -63,6 +64,7 @@
     --k-service: #fe7a7b;
     --k-risk: #f7a8c8;
     --k-kids: #ffd166;
+    --k-money: #8ecae6;
     --curve-main: #8db9ff;
     --curve-base: #99d8b9;
     --curve-net: #ff9ca6;
@@ -101,6 +103,7 @@
   --k-service: #fe7a7b;
   --k-risk: #f7a8c8;
   --k-kids: #ffd166;
+  --k-money: #8ecae6;
   --curve-main: #8db9ff;
   --curve-base: #99d8b9;
   --curve-net: #ff9ca6;
@@ -456,7 +459,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 8px; }
     --bg: #ffffff; --bg2: #ffffff; --surface: #ffffff; --surface2: #f2f2f2; --ink: #000000; --muted: #333333; --line: #000000; --grid: #bdbdbd;
     --accent: #1f7a7a; --gold: #5a3a00; --focus: #9b1c1c; --glass: #ffffff; --shadow: none;
     --past: #666666; --past-ink: #ffffff; --seg-walked: #cfcfcf; --seg-work: #99d8b9; --seg-retired: #ffd9a8; --seg-ink: #000000;
-    --k-stage: #66cccc; --k-work: #99d8b9; --k-license: #ff9966; --k-exam: #b9a3e3; --k-retire: #cc6666; --k-service: #fe7a7b; --k-risk: #f7a8c8; --k-kids: #ffd166;
+    --k-stage: #66cccc; --k-work: #99d8b9; --k-license: #ff9966; --k-exam: #b9a3e3; --k-retire: #cc6666; --k-service: #fe7a7b; --k-risk: #f7a8c8; --k-kids: #ffd166; --k-money: #8ecae6;
   }
   html, body { background: #fff; color: #000; font-size: 11pt; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-shadow: none !important; animation: none !important; }
@@ -506,3 +509,9 @@ code { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--
 .lv-5 .is-on { background: #a8e6d6; }
 .lv-head { margin: 10px 0 4px; font-size: 16px; }
 .lv-advice { margin: 4px 0 6px; padding-left: 20px; }
+
+/* ---- 基本收入累積里程（金幣）與房貸設定 ---- */
+.mile-row { background: var(--surface2); }
+.mile { position: absolute; top: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--surface); border: 2px dashed var(--line); box-sizing: border-box; }
+.mile.is-reached { background: var(--coin); border-style: solid; }
+.mile-title { position: absolute; top: 5px; width: 84px; font-size: 12px; line-height: 22px; text-align: right; color: var(--muted); white-space: nowrap; pointer-events: none; }

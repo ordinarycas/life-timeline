@@ -20,7 +20,7 @@ import { renderDetails, jumpToTag, setAllCards } from './ui/details.js';
 import { renderIncome } from './ui/income.js';
 import { initTabs } from './ui/tabs.js';
 import { loadAdvanced, advancedAssetInputs } from './core/advanced.js';
-import { loansTotal } from './core/loans.js';
+import { loansTotal, loanRemaining } from './core/loans.js';
 import { renderCurve, curveTable, setPrintMode, destroyCurve } from './ui/incomecurve.js';
 import { initPlayer } from './ui/player.js';
 import { initHints } from './ui/hints.js';
@@ -107,6 +107,12 @@ function drawResults() {
   const base0 = useAdv ? { ...prefs, ...advancedAssetInputs(adv, todayTaipei().slice(0, 7), inc.lifeMonths) } : prefs;
   // 使用者自行新增的貸款：本金與預估利息加進借款
   const lt = loansTotal(prefs.loans);
+  const mg = prefs.mortgage;
+  if (mg) {
+    const start = mg.start > 0 ? mg.start : model.age;
+    const rem = loanRemaining({ principal: mg.amount, months: mg.years * 12, rate: mg.rate }, Math.max(Math.round((model.age - start) * 12), 0));
+    if (rem.remainingMonths > 0) { lt.principal += rem.balance; lt.interest += rem.interest; lt.monthly += rem.monthly; }
+  }
   const assetPrefs = lt.principal > 0 ? { ...base0, debt: base0.debt + lt.principal, debtInterest: base0.debtInterest + lt.interest } : base0;
   if (hasAssetInput(assetPrefs)) renderAssets(assetEls, computeAssets({ income: inc.income, lifeMonths: inc.lifeMonths, monthly }, assetPrefs), monthly, useAdv, lt.principal > 0 ? lt : null);
   else hideAssets(assetEls);
@@ -176,6 +182,7 @@ function drawTable() {
   const t = $('tl-table'); clear(t);
   const th = (x) => h('th', { scope: 'col', text: x });
   t.append(h('tr', {}, th('標籤'), th('類型'), th('年齡'), th('狀態')));
+  for (const ms of model.milestones) t.append(h('tr', {}, h('td', { text: `基本收入累積 ${ms.amount / 10000} 萬` }), h('td', { text: '里程' }), h('td', { text: `${ageText(ms.age)} 歲` }), h('td', { text: ms.age <= model.age ? '已達到' : '尚未到' })));
   for (const r of model.rows) t.append(h('tr', {}, h('td', { text: r.label }), h('td', { text: r.tag.kind }), h('td', { text: r.point ? `${ageText(r.at)} 歲` : `${ageText(r.from)}–${ageText(r.to)} 歲` }), h('td', { text: stateText(r.state, r.tag) })));
 }
 

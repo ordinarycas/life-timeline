@@ -2,6 +2,7 @@
 import { h, clear, css } from './dom.js';
 import { KINDS } from '../data/tags.js';
 import { ageText, rangeText } from '../core/format.js';
+import { BASELINE_AGE } from '../core/lifetime.js';
 
 const LEG = 30;          // 圖例高度
 const FLAG_Y = LEG + 2;  // 「現在」「壽命」旗標
@@ -15,7 +16,7 @@ const STATE_TEXT = { past: '已走過', now: '進行中', future: '尚未到' };
 const SEG_TEXT = { walked: '已走過', work: '工作期（至退休）', retired: '退休後' };
 
 export const KIND_VAR = Object.freeze({
-  stage: '--k-stage', work: '--k-work', license: '--k-license', exam: '--k-exam', retire: '--k-retire', service: '--k-service', risk: '--k-risk', kids: '--k-kids',
+  money: '--k-money', stage: '--k-stage', work: '--k-work', license: '--k-license', exam: '--k-exam', retire: '--k-retire', service: '--k-service', risk: '--k-risk', kids: '--k-kids',
 });
 
 export function rowRange(row) {
@@ -56,6 +57,7 @@ export function createTimeline(els, cb) {
     css(els.tl, { width: Math.max(totalW, st.forcedWidth ?? 0) });
 
     const visible = [];
+    if (m.milestones?.length) visible.push({ milestones: true });
     if (m.past.length) visible.push({ toggle: true });
     for (const r of m.rows) if (!(r.state === 'past' || r.state === 'done') || st.expanded) visible.push(r);
     const lanesH = visible.length * ROW_H;
@@ -93,12 +95,32 @@ export function createTimeline(els, cb) {
     for (const item of visible) {
       const top = LANES_Y + i * ROW_H;
       i++;
+      if (item.milestones) { els.lanes.append(mileRow(m, top, x, totalW)); continue; }
       if (item.toggle) { els.lanes.append(pastToggle(m, top, x)); continue; }
       els.lanes.append(rowEl(item, top, x, totalW));
     }
     css(els.tip, {});
     if (st.selected) mark(st.selected, true);
     if (!st.scrolled && !st.forcedWidth) { st.scrolled = true; els.map.scrollLeft = Math.max(0, nowX - els.map.clientWidth * 0.3); }
+  }
+
+  // 從 18 歲起只領基本工資的累積里程：100 萬、500 萬、1000 萬、1500 萬各一個金幣
+  function mileRow(m, top, x, totalW) {
+    const row = h('div', { class: 'row mile-row' });
+    css(row, { top });
+    for (const ms of m.milestones) {
+      const text = `${ms.amount / 10000} 萬`;
+      const reached = ms.age <= m.age;
+      const desc = `從 18 歲起只領基本工資，約 ${ageText(ms.age)} 歲累積到 ${text}${reached ? '（已達到）' : ''}`;
+      const coin = h('span', { class: `mile${reached ? ' is-reached' : ''}`, role: 'img', 'aria-label': desc, title: desc });
+      css(coin, { left: x(ms.age) - 11 });
+      const lbl = h('span', { class: 'lbl', text: `${text}（${ageText(ms.age)} 歲）`, 'aria-hidden': 'true' });
+      const est = [...lbl.textContent].length * 13 + 14;
+      if (x(ms.age) + 12 + est > totalW) css(lbl, { right: totalW - x(ms.age) + 12 }); else css(lbl, { left: x(ms.age) + 12 });
+      row.append(coin, lbl);
+    }
+    row.append(css(h('span', { class: 'mile-title', text: '基本收入累積' }), { left: x(BASELINE_AGE) - 4 - 84 }));
+    return row;
   }
 
   function pastToggle(m, top, x) {
