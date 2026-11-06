@@ -4,7 +4,8 @@ import { KINDS } from '../data/tags.js';
 import { ageText, rangeText, money } from '../core/format.js';
 import { BASELINE_WAGE } from '../data/wage.js';
 import { yearCells } from '../data/stages.js';
-import { BANDS, bandText, bandMode, bandEnds } from '../data/bands.js';
+import { laneItems, lanePlan, fitByChars } from '../core/placement.js';
+import { BANDS, bandText, bandTitle, bandMode, bandEnds } from '../data/bands.js';
 import { clampZoom, pinchZoom, ZOOM_MIN, ZOOM_MAX, ZOOM_STEP } from './zoom.js';
 import { BASELINE_AGE } from '../core/lifetime.js';
 
@@ -21,7 +22,7 @@ const STATE_TEXT = { past: '已走過', now: '進行中', future: '尚未到' };
 const SEG_TEXT = { walked: '已走過', work: '工作期（至退休）', retired: '退休後' };
 
 export const KIND_VAR = Object.freeze({
-  money: '--k-money', health: '--k-health', stage: '--k-stage', work: '--k-work', license: '--k-license', exam: '--k-exam', retire: '--k-retire', service: '--k-service', risk: '--k-risk', kids: '--k-kids',
+  money: '--k-money', explore: '--k-explore', health: '--k-health', stage: '--k-stage', work: '--k-work', license: '--k-license', exam: '--k-exam', retire: '--k-retire', service: '--k-service', risk: '--k-risk', kids: '--k-kids',
 });
 
 export function rowRange(row) {
@@ -68,7 +69,7 @@ export function createTimeline(els, cb) {
     const visible = [];
     if (m.milestones?.length) visible.push({ milestones: true });
     if (m.past.length) visible.push({ toggle: true });
-    for (const r of m.rows) if (!(r.state === 'past' || r.state === 'done') || st.expanded) visible.push(r);
+    for (const it of laneItems(m.rows)) if (st.expanded || it.rows.some((r) => !(r.state === 'past' || r.state === 'done'))) visible.push(it);
     const lanesH = visible.length * ROW_H;
     const totalH = LANES_Y + lanesH + 90;
     css(els.tl, { height: totalH });
@@ -77,6 +78,7 @@ export function createTimeline(els, cb) {
     // 圖例：只列出實際出現的類型
     const kinds = [...new Set(m.rows.map((r) => r.tag.kind))];
     for (const k of kinds) els.legend.append(h('span', { class: 'lg' }, css(h('i'), { '--c': `var(${KIND_VAR[k]})` }), KINDS[k]));
+    if (kinds.includes('health')) els.legend.append(h('span', { class: 'lg' }, '◆ 健康：開始變化'), h('span', { class: 'lg' }, '● 健康：加速變化'));
     els.legend.append(h('span', { class: 'lg past' }, h('i'), '已走過／已取得'), h('span', { class: 'lg now' }, h('i'), '進行中／機會'), h('span', { class: 'lg fut' }, h('i'), '尚未到'));
 
     // 刻度
@@ -90,7 +92,7 @@ export function createTimeline(els, cb) {
       const bw = (Math.min(b.to, m.endAge) - b.from) * ppy;
       els.decades.append(css(h('div', { class: 'band' }), { left: x(b.from), width: bw, top: RULER_Y + 14, height: totalH - RULER_Y - 14 }));
       const mode = bandMode(bw);
-      if (mode !== 'ends') els.decades.append(css(h('div', { class: 'band-chip', text: bandText(b, mode === 'short') }), { left: x(b.from), width: bw, top: RULER_Y + 18 }));
+      if (mode !== 'ends') els.decades.append(css(h('div', { class: 'band-chip', text: mode === 'full' ? bandTitle(b) : bandText(b, mode === 'short') }), { left: x(b.from), width: bw, top: RULER_Y + 18 }));
     }
     if (bandMode((BANDS[0].to - BANDS[0].from) * ppy) === 'ends') {
       for (const e of bandEnds()) if (e.at <= m.endAge) els.decades.append(css(h('div', { class: 'band-chip' , text: e.text }), { left: x(e.at) - 14, width: 28, top: RULER_Y + 18 }));
@@ -117,7 +119,10 @@ export function createTimeline(els, cb) {
       i++;
       if (item.milestones) { els.lanes.append(mileRow(m, top, x, totalW)); continue; }
       if (item.toggle) { els.lanes.append(pastToggle(m, top, x)); continue; }
-      els.lanes.append(rowEl(item, top, x, totalW));
+      const plan = item.rows.length > 1
+        ? lanePlan(item.rows.map((r) => ({ leftX: x(r.at) - 11, rightX: x(r.at) + 11, text: r.label })), totalW, fitByChars)
+        : [item.rows[0].label];
+      item.rows.forEach((r, k) => els.lanes.append(rowEl(r, top, x, totalW, plan[k], item.rows.length > 1)));
     }
     css(els.tip, {});
     if (st.selected) mark(st.selected, true);
@@ -180,13 +185,13 @@ export function createTimeline(els, cb) {
   }
   function focusToggle() { els.lanes.querySelector('.past-toggle')?.focus(); }
 
-  function rowEl(r, top, x, totalW) {
-    const cls = `is-${r.state}`;
+  function rowEl(r, top, x, totalW, labelText = r.label, shared = false) {
+    const cls = `is-${r.state}${r.tag.kind === 'explore' ? ' quiet' : ''}`;
     const color = `var(${KIND_VAR[r.tag.kind]})`;
-    const aria = `${r.label}，${rowRange(r)}，${stateText(r.state, r.tag)}`;
+    const aria = `${r.tag.variant === 'start' ? '開始變化：' : ''}${r.label}，${rowRange(r)}，${stateText(r.state, r.tag)}`;
     let btn; let leftX; let rightX;
     if (r.point) {
-      btn = h('button', { type: 'button', class: `dot ${cls}`, 'aria-label': aria, dataset: { id: r.id } });
+      btn = h('button', { type: 'button', class: `dot ${cls}${r.tag.variant === 'accel' ? ' accel' : ''}`, 'aria-label': aria, dataset: { id: r.id } });
       css(btn, { left: x(r.at) - 11, '--c': color });
       leftX = x(r.at) - 11; rightX = x(r.at) + 11;
     } else {
@@ -202,17 +207,19 @@ export function createTimeline(els, cb) {
         const span = yrs.span ?? 1;
         [...yrs.labels, ...yrs.reserve].forEach((t, i) => {
           const reserve = i >= yrs.labels.length;
-          btn.append(css(h('span', { class: `yr${i === 0 ? ' is-first' : ''}${reserve ? ' is-reserve' : ''}`, 'aria-hidden': 'true' }, h('i', { text: t })), { left: i * step * span, width: step * span }));
+          btn.append(css(h('span', { class: `yr${i === 0 ? ' is-first' : ''}${reserve ? ' is-reserve' : ''}`, 'aria-hidden': 'true' }, h('i', { text: t })), { left: i * step * span - 2, width: step * span }));
         });
       }
       css(btn, { left: x(r.from), width: w, '--c': color });
       leftX = x(r.from); rightX = x(r.from) + w;
     }
-    const lbl = h('span', { class: 'lbl', text: r.label, 'aria-hidden': 'true' });
-    const est = [...r.label].length * 13 + 14;
-    if (rightX + 6 + est > totalW && leftX - 6 - est > 0) css(lbl, { right: totalW - leftX + 6 });
-    else css(lbl, { left: rightX + 6 });
-    const row = h('div', { class: `row ${cls}` }, btn, lbl);
+    const lbl = labelText ? h('span', { class: 'lbl', text: labelText, 'aria-hidden': 'true' }) : null;
+    if (lbl) {
+      const est = [...labelText].length * 13 + 14;
+      if (!shared && rightX + 6 + est > totalW && leftX - 6 - est > 0) css(lbl, { right: totalW - leftX + 6 });
+      else css(lbl, { left: rightX + 6 });
+    }
+    const row = h('div', { class: `row ${cls}${shared ? ' shared' : ''}` }, btn, lbl);
     css(row, { top });
     wire(btn, r, top, leftX);
     st.buttons.set(r.id, btn);

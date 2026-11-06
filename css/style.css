@@ -24,7 +24,7 @@
   --k-service: #fe7a7b;
   --k-risk: #f7a8c8;
   --k-kids: #ffd166;
-  --k-money: #8ecae6; --k-health: #c9e265;
+  --k-money: #8ecae6; --k-health: #c9e265; --k-explore: #e8d9a0;
   --curve-main: #2d5aa8;
   --curve-base: #1c7c4f;
   --curve-net: #b03a48;
@@ -66,7 +66,7 @@
     --k-service: #fe7a7b;
     --k-risk: #f7a8c8;
     --k-kids: #ffd166;
-    --k-money: #8ecae6; --k-health: #c9e265;
+    --k-money: #8ecae6; --k-health: #c9e265; --k-explore: #b3a05a;
     --curve-main: #8db9ff;
     --curve-base: #99d8b9;
     --curve-net: #ff9ca6;
@@ -106,7 +106,7 @@
   --k-service: #fe7a7b;
   --k-risk: #f7a8c8;
   --k-kids: #ffd166;
-  --k-money: #8ecae6; --k-health: #c9e265;
+  --k-money: #8ecae6; --k-health: #c9e265; --k-explore: #b3a05a;
   --curve-main: #8db9ff;
   --curve-base: #99d8b9;
   --curve-net: #ff9ca6;
@@ -466,7 +466,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 8px; }
     --bg: #ffffff; --bg2: #ffffff; --surface: #ffffff; --surface2: #f2f2f2; --ink: #000000; --muted: #333333; --line: #000000; --grid: #bdbdbd;
     --accent: #1f7a7a; --gold: #5a3a00; --focus: #9b1c1c; --glass: #ffffff; --shadow: none;
     --past: #666666; --past-ink: #ffffff; --seg-walked: #cfcfcf; --seg-work: #99d8b9; --seg-retired: #ffd9a8; --seg-ink: #000000;
-    --k-stage: #66cccc; --k-work: #99d8b9; --k-license: #ff9966; --k-exam: #b9a3e3; --k-retire: #cc6666; --k-service: #fe7a7b; --k-risk: #f7a8c8; --k-kids: #ffd166; --k-money: #8ecae6; --k-health: #c9e265;
+    --k-stage: #66cccc; --k-work: #99d8b9; --k-license: #ff9966; --k-exam: #b9a3e3; --k-retire: #cc6666; --k-service: #fe7a7b; --k-risk: #f7a8c8; --k-kids: #ffd166; --k-money: #8ecae6; --k-health: #c9e265; --k-explore: #e8d9a0;
   }
   html, body { background: #fff; color: #000; font-size: 11pt; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-shadow: none !important; animation: none !important; }
@@ -552,3 +552,11 @@ code { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--
 /* ---- 年齡階段（24–28、29–32、33–36，連續） ---- */
 .band { position: absolute; background: var(--band); border-left: 1px dashed var(--muted); border-right: 1px dashed var(--muted); box-sizing: border-box; pointer-events: none; }
 .band-chip { position: absolute; height: 18px; line-height: 18px; font-size: 11px; text-align: center; white-space: nowrap; color: var(--ink); font-weight: 700; pointer-events: none; }
+
+/* ---- 健康參考：開始＝菱形、加速＝圓點 ---- */
+.dot.accel::before { border-radius: 50%; transform: none; }
+.row.shared { border-bottom: 0; }
+
+/* 職涯／人生探索：金色、不顯眼（不畫「進行中」的粗框、框線用較淡的顏色） */
+.bar.quiet { border-color: var(--muted); }
+.bar.quiet.is-now { box-shadow: none; }

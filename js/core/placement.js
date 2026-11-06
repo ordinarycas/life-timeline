@@ -7,6 +7,7 @@ import { TAGS, KIND_ORDER } from '../data/tags.js';
 import { BASELINE_WAGE } from '../data/wage.js';
 import { BASELINE_AGE } from './lifetime.js';
 import { loanCost } from './loans.js';
+import { BANDS } from '../data/bands.js';
 import { ORGANS, accelFrom, accelText } from '../data/health.js';
 import { money } from './format.js';
 
@@ -65,25 +66,37 @@ export function buildTimeline(prefs, todayIso, tags = TAGS) {
   }
   // 職涯／人生探索：24–36 歲，每四年一個階段（24–28、29–32、33–36）。本站規劃用的分段，不是標籤資料
   {
-    const tag = { id: 'career-explore', label: '職涯／人生探索', kind: 'work', audience: 'all', user: true, short: '', detail: [], sources: [] };
+    const tag = { id: 'career-explore', label: '職涯／人生探索', kind: 'explore', audience: 'all', user: true, short: '', detail: [], sources: [] };
     const row = normalize(tag, {
       from: 24, to: 36,
-      short: '24 歲起每四年一個階段：24–28、29–32、33–36 歲。放大時間軸到 400% 會分成三個階段。這是本站規劃用的分段，不是法規。',
+      short: `24 歲起每四年一個階段：${BANDS.map((b) => `${b.name}（${b.label} 歲）`).join('、')}。這段時間自由度最大。放大時間軸到 400% 會分成三個階段。這是本站規劃用的分段，不是法規。`,
     }, age, endAge);
     if (row) rows.push(row);
   }
-  // 健康參考（選用）：每個器官一條——開始變化到加速變化是橫條，加速變化之後畫成斜線延伸到壽命。非官方資料，不是標籤。
+  // 健康參考（選用）：相同「開始變化」年齡的器官併在同一排。每排一個「開始」點（◆）；
+  // 每個不同的「加速變化」年齡再一個點（●）。非官方資料，不是標籤。
   if (eff.health) {
-    for (const o of ORGANS) {
-      if (o.audience !== 'all' && o.audience !== sex) continue;
-      const a0 = accelFrom(o);
-      const tag = { id: `health-${o.id}`, label: o.label, kind: 'health', audience: o.audience, user: true, short: '', detail: [], sources: [] };
-      const row = normalize(tag, {
-        from: o.onset, to: a0, ext: { from: a0, to: endAge },
-        short: `平均約 ${o.onset} 歲開始變化，約 ${accelText(o)}開始加速變化（斜線）。民間媒體整理、非官方，不是醫療建議。`,
-        extra: o.common ? `圖表標示加速變化後較常見：${o.common}。` : null,
-      }, age, endAge);
-      if (row) rows.push(row);
+    const list = ORGANS.filter((o) => o.audience === 'all' || o.audience === sex);
+    const byOnset = new Map();
+    for (const o of list) byOnset.set(o.onset, [...(byOnset.get(o.onset) ?? []), o]);
+    const names = (os) => os.map((o) => o.label).join('／');
+    const NOTE = '民間媒體整理、非官方，不是醫療建議。';
+    for (const [onset, orgs] of [...byOnset].sort((x, y) => x[0] - y[0])) {
+      const lane = `health-${onset}`;
+      const add = (suffix, variant, label, at, short, extra) => {
+        const tag = { id: `${lane}-${suffix}`, label, kind: 'health', variant, lane, audience: 'all', user: true, short: '', detail: [], sources: [] };
+        const row = normalize(tag, { at, label, short, extra }, age, endAge);
+        if (row) rows.push(row);
+      };
+      add('start', 'start', names(orgs), onset, `平均約 ${onset} 歲開始變化：${names(orgs)}。${NOTE}`, null);
+      const byAccel = new Map();
+      for (const o of orgs) byAccel.set(accelFrom(o), [...(byAccel.get(accelFrom(o)) ?? []), o]);
+      for (const [a0, os] of [...byAccel].sort((x, y) => x[0] - y[0])) {
+        const withRange = os.map((o) => (Array.isArray(o.accel) ? `${o.label}（${accelText(o)}）` : o.label)).join('／');
+        const common = os.filter((o) => o.common).map((o) => `${o.label}：${o.common}`).join('；');
+        add(`accel-${a0}`, 'accel', `加速：${withRange}`, a0,
+          `${os.map((o) => `${o.label}約 ${accelText(o)}`).join('、')}開始加速變化。${NOTE}`, common ? `圖表標示加速變化後較常見：${common}。` : null);
+      }
     }
   }
   rows.sort((a, b) => a.start - b.start || KIND_ORDER.indexOf(a.tag.kind) - KIND_ORDER.indexOf(b.tag.kind) || (a.tag.id < b.tag.id ? -1 : 1));
@@ -145,4 +158,45 @@ export const MILESTONES = Object.freeze([1_000_000, 5_000_000, 10_000_000, 15_00
 export function milestones(stopAge, endAge, wage = BASELINE_WAGE) {
   if (!(wage > 0)) return [];
   return MILESTONES.map((amount) => ({ amount, age: BASELINE_AGE + amount / (wage * 12) })).filter((m) => m.age <= Math.min(stopAge, endAge));
+}
+
+/** 同一排（tag.lane 相同）的列併成一個項目；其他列各自一個項目。順序以第一次出現為準。 */
+export function laneItems(rows) {
+  const out = []; const idx = new Map();
+  for (const r of rows) {
+    const k = r.tag.lane;
+    if (!k) { out.push({ rows: [r] }); continue; }
+    if (!idx.has(k)) { const it = { lane: k, rows: [] }; idx.set(k, it); out.push(it); }
+    idx.get(k).rows.push(r);
+  }
+  return out;
+}
+
+/**
+ * 同一排有多個點時，標籤放在點的右邊：空間不夠就截短（加「…」），連 3 個字都放不下，或會壓到前一個標籤，就不畫標籤
+ * （點本身與點開來的說明仍在）。
+ * @param {{leftX:number,rightX:number,text:string}[]} pts 由左到右
+ * @param {number} limit 右邊界
+ * @param {(text:string, room:number)=>string|null} fit 在 room 像素內放得下就回傳（可能截短後的）文字，放不下回傳 null
+ * @returns {(string|null)[]}
+ */
+export function lanePlan(pts, limit, fit) {
+  let lastEnd = -Infinity;
+  return pts.map((p, k) => {
+    const left = Math.max(p.rightX + 6, lastEnd + 4);
+    const next = pts[k + 1];
+    const room = (next ? next.leftX - 4 : limit) - left;
+    const text = room > 0 ? fit(p.text, room) : null;
+    if (text) { lastEnd = left + room; return text; }
+    lastEnd = Math.max(lastEnd, p.rightX);
+    return null;
+  });
+}
+
+/** 以 13px 字、左右各留一點空白估算寬度（時間軸用）。 */
+export function fitByChars(text, room) {
+  const chars = [...text];
+  const n = Math.floor((room - 14) / 13);
+  if (n >= chars.length) return text;
+  return n >= 3 ? `${chars.slice(0, n - 1).join('')}…` : null;
 }

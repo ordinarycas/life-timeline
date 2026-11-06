@@ -4,6 +4,7 @@ import { ageText } from '../core/format.js';
 import { BASELINE_AGE } from '../core/lifetime.js';
 import { BANDS, bandText } from '../data/bands.js';
 import { KIND_VAR } from './timeline.js';
+import { laneItems, lanePlan } from '../core/placement.js';
 
 const FONT = '"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,-apple-system,"Segoe UI",sans-serif';
 const C = {
@@ -30,8 +31,15 @@ export function drawTimelineImage(model, { title, sub, scale = 2 }) {
   const probe = document.createElement('canvas').getContext('2d');
   const tw = (text, size, weight = 400) => { probe.font = `${weight} ${size}px ${FONT}`; return probe.measureText(text).width; };
 
+  // 在 room 像素內放得下就回傳文字，放不下就截短（加「…」），連 3 個字都放不下回傳 null
+  const fitCanvas = (text, room) => {
+    if (tw(text, 13) + 8 <= room) return text;
+    const chars = [...text];
+    while (chars.length > 2 && tw(`${chars.join('')}…`, 13) + 8 > room) chars.pop();
+    return chars.length >= 3 ? `${chars.join('')}…` : null;
+  };
   // 圖例換行
-  const legend = [...kinds.map((k) => ({ k, text: KINDS[k], color: kindColor(k) })), { k: 'past', text: '已走過／已取得', color: C.past }, { k: 'now', text: '進行中／機會', color: '#ffffff', ring: true }, { k: 'fut', text: '尚未到', color: '#ffffff', dashed: true }];
+  const legend = [...kinds.map((k) => ({ k, text: KINDS[k], color: kindColor(k) })), ...(kinds.includes('health') ? [{ k: 'hs', text: '◆ 開始變化', color: kindColor('health') }, { k: 'ha', text: '● 加速變化', color: kindColor('health') }] : []), { k: 'past', text: '已走過／已取得', color: C.past }, { k: 'now', text: '進行中／機會', color: '#ffffff', ring: true }, { k: 'fut', text: '尚未到', color: '#ffffff', dashed: true }];
   const lg = []; let lx = M; let ly = 74;
   for (const it of legend) {
     const w = 18 + tw(it.text, 12) + 14;
@@ -40,7 +48,7 @@ export function drawTimelineImage(model, { title, sub, scale = 2 }) {
   }
   const top0 = ly + 22;
   const FLAG_Y = top0; const BAR_Y = top0 + 26; const RULER_Y = top0 + 56; const LANES_Y = top0 + 100;
-  const lanes = (hasMile ? 1 : 0) + rows.length;
+  const lanes = (hasMile ? 1 : 0) + laneItems(rows).length;
   const H = LANES_Y + lanes * ROW_H + 40;
 
   const canvas = document.createElement('canvas');
@@ -118,15 +126,19 @@ export function drawTimelineImage(model, { title, sub, scale = 2 }) {
     });
     sep(y); i++;
   }
-  for (const r of rows) {
+  for (const it of laneItems(rows)) {
     const y = rowTop(); const cy = y + ROW_H / 2;
+    const plan = it.rows.length > 1 ? lanePlan(it.rows.map((r) => ({ leftX: x(r.at) - 11, rightX: x(r.at) + 11, text: r.label })), W - M, fitCanvas) : [true];
+    it.rows.forEach((r, k) => {
     const gray = r.state === 'past' || r.state === 'done';
     const color = gray ? C.past : kindColor(r.tag.kind);
     const fut = r.state === 'future' || r.state === 'chance';
     let leftX; let rightX;
     if (r.point) {
       const px = x(r.at); leftX = px - 11; rightX = px + 11;
-      g.beginPath(); g.moveTo(px, cy - 9); g.lineTo(px + 9, cy); g.lineTo(px, cy + 9); g.lineTo(px - 9, cy); g.closePath();
+      g.beginPath();
+      if (r.tag.variant === 'accel') g.arc(px, cy, 8, 0, Math.PI * 2);
+      else { g.moveTo(px, cy - 9); g.lineTo(px + 9, cy); g.lineTo(px, cy + 9); g.lineTo(px - 9, cy); g.closePath(); }
       g.fillStyle = r.state === 'chance' ? C.coin : fut ? C.page : color; g.fill();
       g.lineWidth = 2; g.strokeStyle = r.state === 'now' ? C.focus : C.ink; g.stroke();
     } else {
@@ -142,7 +154,9 @@ export function drawTimelineImage(model, { title, sub, scale = 2 }) {
     }
     const lw = tw(r.label, 13) + 8;
     const color2 = gray ? C.muted : C.ink;
-    if (rightX + 6 + lw > W - M && leftX - 6 - lw > 0) label(r.label, 0, cy, color2, leftX - 6); else label(r.label, rightX + 6, cy, color2);
+    if (it.rows.length > 1) { if (plan[k]) label(plan[k], rightX + 6, cy, color2); }
+    else if (rightX + 6 + lw > W - M && leftX - 6 - lw > 0) label(r.label, 0, cy, color2, leftX - 6); else label(r.label, rightX + 6, cy, color2);
+    });
     sep(y); i++;
   }
   // 現在線與旗標
