@@ -41,6 +41,18 @@
     <div class="stage-top">
       <h1 id="stage-title" class="stage-title">人生時間軸</h1>
       <p id="stage-sub" class="stage-sub"></p>
+      <div class="tl-tools no-print" role="toolbar" aria-label="時間軸工具">
+        <span class="tl-tools-grp" role="group" aria-label="縮放">
+          <button type="button" class="btn" id="tl-zoom-out" aria-label="縮小時間軸">－</button>
+          <button type="button" class="btn" id="tl-zoom-reset" aria-label="還原縮放">100%</button>
+          <button type="button" class="btn" id="tl-zoom-in" aria-label="放大時間軸">＋</button>
+        </span>
+        <span class="tl-tools-grp" role="group" aria-label="圖片">
+          <button type="button" class="btn" id="tl-share">分享圖片</button>
+          <button type="button" class="btn" id="tl-download">下載圖片</button>
+          <button type="button" class="btn" id="tl-print-img">列印圖片</button>
+        </span>
+      </div>
     </div>
     <p id="demo-note" class="demo-note" hidden>示範資料：男、30 歲。到下方輸入生日與性別，就會換成你的時間軸。</p>
     <div id="landscape-hint" class="hint-bar no-print" role="note" hidden>
@@ -304,6 +316,7 @@
 
 <div id="toasts" class="toasts no-print" role="status" aria-live="polite"></div>
 <noscript><p class="noscript">此網站需要啟用 JavaScript。資料只存在你的瀏覽器中，不會上傳。</p></noscript>
+<div class="print-sheet" id="print-sheet" aria-hidden="true"><img id="print-img" alt="人生時間軸圖片" width="1000"></div>
 <script type="module" src="js/app.js"></script>
 </body>
 </html>

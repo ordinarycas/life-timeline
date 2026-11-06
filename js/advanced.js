@@ -4,6 +4,8 @@ import { applyTheme } from './ui/theme.js';
 import { money } from './core/format.js';
 import { todayTaipei } from './core/clock.js';
 import { LOAN_TYPES, parseAdvanced, loadAdvanced, loadAdvancedRaw, saveAdvanced, clearAdvanced, advancedSummary } from './core/advanced.js';
+import { buildExample } from './core/advexample.js';
+import { toast } from './ui/dom.js';
 import { loadMarket, saveMarket, clearMarket, parseTwseDay, parseFx } from './core/market.js';
 
 const $ = (id) => document.getElementById(id);
@@ -11,6 +13,7 @@ const MAX_BYTES = 500 * 1024;
 
 function render() {
   const adv = loadAdvanced();
+  const ex = document.getElementById('adv-export'); if (ex) ex.disabled = !adv;
   const box = $('adv-summary'); clear(box);
   $('adv-clear').hidden = !adv;
   if (!adv) { box.append(h('p', { text: '目前沒有匯入資料。匯入後，首頁的「累積收入曲線」會多一條線。' })); return; }
@@ -146,6 +149,31 @@ $('adv-file').addEventListener('change', async (e) => {
   render();
 });
 $('adv-clear').addEventListener('click', () => { clearAdvanced(); setStatus('已清除匯入的資料。'); render(); });
+
+// ---- JSON 範例與匯出 ----
+const example = () => { const t = todayTaipei(); return JSON.stringify(buildExample(t.slice(0, 7), t), null, 2); };
+function downloadText(text, name) {
+  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  const a = document.createElement('a'); a.href = url; a.download = name; a.rel = 'noopener';
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+$('adv-example').textContent = example();
+$('adv-ex-download').addEventListener('click', () => { downloadText(example(), 'ltl-advanced-example.json'); $('adv-ex-status').textContent = '已下載範例。'; });
+$('adv-ex-copy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(example()); $('adv-ex-status').textContent = '已複製範例。'; } catch {
+    const r = document.createRange(); r.selectNodeContents($('adv-example')); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    $('adv-ex-status').textContent = '瀏覽器不允許直接複製，已選取範例，請按 Ctrl＋C（手機長按選「拷貝」）。';
+  }
+});
+$('adv-export').disabled = !loadAdvancedRaw();
+$('adv-export').addEventListener('click', () => {
+  const raw = loadAdvancedRaw();
+  if (!raw) { $('adv-ex-status').textContent = '目前沒有匯入的資料。'; return; }
+  downloadText(JSON.stringify(raw, null, 2), 'ltl-advanced.json');
+  $('adv-ex-status').textContent = '已匯出目前的資料（不含線上更新的股價與匯率）。';
+  toast('已匯出，檔案含你的財務數字，請自行保管。');
+});
 
 try {
   const p = JSON.parse(localStorage.getItem('ltl.prefs.v1') || 'null');

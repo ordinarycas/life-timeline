@@ -34,6 +34,37 @@
       </ol>
       <p class="note">轉換只支援原表的版面（需要「每月支出」「月度彙總」「借款總表」「股票質押」工作表）。生活支出月平均是 Excel 12 個月資料的平均；若有月份的信用卡還沒輸入，平均會偏低。</p>
     </details>
+    <details class="card" id="adv-format">
+      <summary><span class="sum-title">JSON 格式範例（不用 Excel，自己填寫也可以）</span></summary>
+      <p>下面是一份虛構的範例，月份從下個月起排 36 個月。你可以複製或下載後改成自己的數字，再用下方「匯入」選擇檔案。也可以把目前匯入的資料匯出，備份或換瀏覽器時再匯入。</p>
+      <div class="top-actions">
+        <button type="button" class="btn" id="adv-ex-copy">複製範例</button>
+        <button type="button" class="btn" id="adv-ex-download">下載範例 JSON</button>
+        <button type="button" class="btn" id="adv-export" disabled>匯出目前的資料</button>
+      </div>
+      <p id="adv-ex-status" class="note" role="status"></p>
+      <pre class="code-block" tabindex="0" aria-label="JSON 範例"><code id="adv-example"></code></pre>
+      <div class="table-wrap"><table class="data-table">
+        <caption>欄位說明（金額一律是新台幣整數；利率用小數）</caption>
+        <thead><tr><th scope="col">欄位</th><th scope="col">型別</th><th scope="col">必填</th><th scope="col">說明</th></tr></thead>
+        <tbody>
+            <tr><th scope="row"><code>version</code></th><td>數字</td><td>必填</td><td>格式版本，填 2（1 也能匯入，會當作沒有借款餘額、股票等欄位）。</td></tr>
+            <tr><th scope="row"><code>exportedAt</code></th><td>文字</td><td>選填</td><td>資料日期，例如 2026-11-06，只用來顯示。</td></tr>
+            <tr><th scope="row"><code>livingMonthlyAvg</code></th><td>數字</td><td>必填</td><td>生活支出的「12 個月月平均」（NT$）。曲線與餘裕會從今天起每月扣這筆。</td></tr>
+            <tr><th scope="row"><code>months</code></th><td>陣列</td><td>必填</td><td>每個月的借款還款，最多 600 筆，月份不可重複。沒列到的月份視為 0。</td></tr>
+            <tr><th scope="row"><code>months[].ym</code></th><td>文字</td><td>必填</td><td>月份，格式 YYYY-MM，例如 2026-12。</td></tr>
+            <tr><th scope="row"><code>months[].interest</code></th><td>數字</td><td>必填</td><td>當月各貸款利息合計（NT$，不含股票質押利息）。</td></tr>
+            <tr><th scope="row"><code>months[].principal</code></th><td>數字</td><td>必填</td><td>當月各貸款本金合計（NT$）。每月還款＝利息＋本金。</td></tr>
+            <tr><th scope="row"><code>months[].parts</code></th><td>物件</td><td>選填</td><td>依類型拆開：credit（銀行信用貸款）、revolving（銀行循環額度）、policy（保單借款），各有 interest、principal。用於逐月明細。</td></tr>
+            <tr><th scope="row"><code>loans</code></th><td>陣列</td><td>選填</td><td>目前的各筆貸款：type（credit／revolving／policy）、balance（目前餘額 NT$）、rate（年利率，0.035 代表 3.5%）；美元保單借款可加 usd（美元本金）。不要放銀行名稱。</td></tr>
+            <tr><th scope="row"><code>pledge</code></th><td>物件</td><td>選填</td><td>股票質押：borrowed（已借金額）、rate（年利率）、monthlyInterest（每月利息）、stockValue（質押標的現值），金額單位 NT$。假設本金不還、持續展延。</td></tr>
+            <tr><th scope="row"><code>holdings</code></th><td>陣列</td><td>選填</td><td>持股：code（股票代號）、market（TWSE 上市或 TPEX 上櫃）、shares（股數）、price（股價）、pledged（是否質押，true／false）。用於「線上更新股價」。</td></tr>
+            <tr><th scope="row"><code>fx</code></th><td>數字</td><td>選填</td><td>USD/TWD 匯率，用於美元借款換算。</td></tr>
+            <tr><th scope="row"><code>stockValueFree</code></th><td>數字</td><td>選填</td><td>未質押持股現值（NT$），算進資產的投資。</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">匯入時會檢查格式，錯誤會說明哪裡不對；檔案超過 500 KB 會被拒絕。匯出的檔案含你的財務數字，請自行保管，不要上傳到公開的地方。</p>
+    </details>
     <div class="card" id="adv-import">
       <h2 class="sub-title">匯入</h2>
       <div class="field"><label for="adv-file">選擇 JSON 檔案</label><input type="file" id="adv-file" accept="application/json,.json"></div>

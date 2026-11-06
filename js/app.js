@@ -13,6 +13,7 @@ import { h, clear, toast } from './ui/dom.js';
 import { initTheme } from './ui/theme.js';
 import { loadFonts } from './ui/fonts.js';
 import { createTimeline } from './ui/timeline.js';
+import { initTimelineTools } from './ui/timelinetools.js';
 import { renderInfo } from './ui/infocard.js';
 import { stateText, rowRange } from './ui/timeline.js';
 import { initSettings } from './ui/settings.js';
@@ -55,6 +56,14 @@ const timeline = createTimeline({
 }, {
   onSelect: () => drawInfo(),
   onJump: (id) => jumpToTag(id),
+  onZoom: (z) => tools?.onZoom(z),
+});
+const tools = initTimelineTools({
+  timeline,
+  els: {
+    zoomIn: $('tl-zoom-in'), zoomOut: $('tl-zoom-out'), zoomReset: $('tl-zoom-reset'), share: $('tl-share'), download: $('tl-download'), print: $('tl-print-img'),
+    img: $('print-img'), title: $('stage-title'), sub: $('stage-sub'),
+  },
 });
 
 function drawInfo() {

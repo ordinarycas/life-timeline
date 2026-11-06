@@ -189,7 +189,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 8px; }
   background:
     linear-gradient(var(--bg2), var(--bg2)),
     var(--bg2);
-  overscroll-behavior: contain;
+  overscroll-behavior: contain; touch-action: pan-x pan-y;
 }
 .stage-map:focus-visible { outline-offset: -3px; }
 .tl { position: relative; min-width: 100%; }
@@ -454,7 +454,11 @@ main { max-width: 1280px; margin: 0 auto; padding: 16px 16px 8px; }
 
 /* ---- 列印：強制淺色、隱藏互動元件、時間軸展開 ---- */
 @page { size: A4 landscape; margin: 10mm; }
+.print-sheet { display: none; }
 @media print {
+  body.print-image > *:not(.print-sheet) { display: none !important; }
+  body.print-image .print-sheet { display: block !important; }
+  .print-sheet img { display: block; margin: 0 auto; width: auto; max-width: 100%; max-height: 188mm; height: auto; }
   :root, :root[data-theme="dark"] {
     --bg: #ffffff; --bg2: #ffffff; --surface: #ffffff; --surface2: #f2f2f2; --ink: #000000; --muted: #333333; --line: #000000; --grid: #bdbdbd;
     --accent: #1f7a7a; --gold: #5a3a00; --focus: #9b1c1c; --glass: #ffffff; --shadow: none;
@@ -512,6 +516,24 @@ code { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--
 
 /* ---- 基本收入累積里程（金幣）與房貸設定 ---- */
 .mile-row { background: var(--surface2); }
-.mile { position: absolute; top: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--surface); border: 2px dashed var(--line); box-sizing: border-box; }
+.mile { position: absolute; top: 6px; width: 20px; height: 20px; padding: 0; margin: 0; border-radius: 50%; background: var(--surface); border: 2px dashed var(--line); box-sizing: border-box; cursor: pointer; font: inherit; }
+.mile::after { content: ""; position: absolute; inset: -8px; }
+.mile:hover { filter: brightness(1.1); }
 .mile.is-reached { background: var(--coin); border-style: solid; }
 .mile-title { position: absolute; top: 5px; width: 84px; font-size: 12px; line-height: 22px; text-align: right; color: var(--muted); white-space: nowrap; pointer-events: none; }
+
+/* ---- 時間軸工具列（縮放、圖片） ---- */
+.tl-tools { margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.tl-tools-grp { display: inline-flex; gap: 4px; }
+.tl-tools .btn { white-space: nowrap; }
+.tl-tools .btn { min-height: 34px; padding: 2px 10px; font-size: 13px; }
+#tl-zoom-reset { min-width: 56px; }
+@media (max-width: 720px) {
+  .tl-tools { margin-left: 0; width: 100%; flex-wrap: nowrap; justify-content: space-between; gap: 6px; }
+  .tl-tools .btn { min-height: 40px; padding: 2px 6px; font-size: 12px; min-width: 0; white-space: nowrap; }
+  #tl-zoom-reset { min-width: 50px; }
+}
+
+.code-block { margin: 10px 0; padding: 10px 12px; max-height: 340px; overflow: auto; background: var(--surface2); border: 2px solid var(--line); font-size: 12px; line-height: 1.5; tab-size: 2; }
+.code-block code { background: transparent; padding: 0; white-space: pre; }
+#adv-format .table-wrap { margin-top: 10px; }
