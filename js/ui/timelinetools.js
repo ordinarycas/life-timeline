@@ -3,7 +3,7 @@ import { toast } from './dom.js';
 import { fontsReady } from './fonts.js';
 import { drawTimelineImage, canvasBlob } from './timelineimage.js';
 import { drawCurveSection, drawAssetsSection, drawPromoSection, composeSections } from './imagesections.js';
-import { shareUrl } from '../data/site.js';
+import { shareUrl, shareText } from '../data/site.js';
 
 const FILE = 'life-timeline.png';
 
@@ -44,7 +44,7 @@ export function initTimelineTools({ timeline, els, getExtras = () => ({}), initi
     const blob = await canvasBlob(await makeCanvas());
     const file = new File([blob], FILE, { type: 'image/png' });
     if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: '我的人生時間軸' });
+      await navigator.share({ files: [file], title: '我的人生時間軸', text: shareText(shareUrl()) }); // 連結放在文字裡，對方的聊天軟體會顯示成可以點的連結
     } else {
       saveBlob(blob); toast('這個瀏覽器不能直接分享圖片，已改為下載。');
     }
@@ -59,6 +59,16 @@ export function initTimelineTools({ timeline, els, getExtras = () => ({}), initi
     print();
   }));
 
+  // 只分享連結（文字）：支援的瀏覽器開分享面板，否則複製到剪貼簿，貼到任何聊天軟體都是可以點的連結
+  els.shareLink.addEventListener('click', async () => {
+    const url = shareUrl();
+    if (!url) { toast('目前是本機或檔案開啟，沒有公開網址可以分享；部署到網站後才能分享連結。', 6000); return; }
+    const text = shareText(url);
+    try {
+      if (navigator.share) { await navigator.share({ title: 'LifeTimeline 人生時間軸', text }); return; }
+    } catch (e) { if (e?.name === 'AbortError') return; }
+    try { await navigator.clipboard.writeText(text); toast('已複製連結，可以貼到聊天軟體。'); } catch { toast(`請自行複製這個連結：${url}`, 8000); }
+  });
   els.optCurve.checked = !!initial.curve;
   els.optAssets.checked = !!initial.assets;
   els.optCurve.addEventListener('change', () => onOpt('curve', els.optCurve.checked));

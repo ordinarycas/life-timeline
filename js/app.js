@@ -67,7 +67,7 @@ const tools = initTimelineTools({
   onOpt: (k, v) => setHint(k === 'curve' ? 'imgCurve' : 'imgAssets', v),
   els: {
     optCurve: $('tl-opt-curve'), optAssets: $('tl-opt-assets'),
-    zoomIn: $('tl-zoom-in'), zoomOut: $('tl-zoom-out'), zoomReset: $('tl-zoom-reset'), share: $('tl-share'), download: $('tl-download'), print: $('tl-print-img'),
+    zoomIn: $('tl-zoom-in'), zoomOut: $('tl-zoom-out'), zoomReset: $('tl-zoom-reset'), share: $('tl-share'), shareLink: $('tl-share-link'), download: $('tl-download'), print: $('tl-print-img'),
     img: $('print-img'), title: $('stage-title'), sub: $('stage-sub'),
   },
 });
