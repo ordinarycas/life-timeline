@@ -80,7 +80,13 @@ const FONT_HOSTS = new Set(['fonts.googleapis.com', 'fonts.gstatic.com']);
 const VERSIONED = /^ltl-[0-9a-f]{10}$/; // 版本快取；ltl-fonts-v1 不符合，所以不會被清掉
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
+  // cache: 'reload' 一定向伺服器重新取得，不讀瀏覽器／CDN 暫存（主機對 js、css 設了數小時的 max-age，否則新版可能存進舊檔，造成一直顯示「有新版本」）
+  const fill = (c) => Promise.all(PRECACHE.map(async (u) => {
+    const res = await fetch(new Request(u, { cache: 'reload' }));
+    if (!res.ok) throw new Error(`${u} ${res.status}`);
+    await c.put(u, res);
+  }));
+  e.waitUntil(caches.open(VERSION).then(fill).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -117,7 +123,7 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.open(VERSION).then(async (cache) => {
       const hit = await cache.match(req);
-      const refresh = fetch(req).then((res) => { if (res.ok) cache.put(req, res.clone()); return res; });
+      const refresh = fetch(req, { cache: 'no-cache' }).then((res) => { if (res.ok) cache.put(req, res.clone()); return res; }); // no-cache：先向伺服器驗證（ETag），未變動就是 304，不會拿到過期暫存
       if (hit) { refresh.catch(() => {}); return hit; }
       return refresh;
     }),
