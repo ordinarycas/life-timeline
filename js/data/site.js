@@ -2,7 +2,7 @@
 export const SITE_NAME = 'LifeTimeline｜人生時間軸與薪資收入';
 export const SITE_INTRO = '給台灣人的人生時間軸：輸入生日、性別與月薪，看學制、兵役、駕照、退休規定等人生階段，以及只領基本工資至少能賺多少。免費、不用註冊，資料只存在你自己的瀏覽器，可離線使用。';
 /** 正式網址。留空就用目前頁面的網址（本機開發時不顯示網址）。 */
-export const SITE_URL = '';
+export const SITE_URL = 'https://gcl.refcode.cc';
 
 /** 用文字分享時的內容：一句話加上連結（連結放在最後，聊天軟體會自動變成可以點的連結）。 */
 export function shareText(url) {
