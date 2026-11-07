@@ -537,7 +537,10 @@ code { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--
 @media (max-width: 720px) {
   .tl-tools { margin-left: 0; width: 100%; flex-wrap: wrap; justify-content: space-between; gap: 6px; }
   .tl-tools .btn { min-height: 40px; padding: 2px 6px; font-size: 12px; min-width: 0; white-space: nowrap; }
-  #tl-zoom-reset { min-width: 50px; }
+  #tl-zoom-reset { min-width: 0; }
+  /* 手機：每一排按鈕撐滿 100% 寬度，同一排的按鈕等寬 */
+  .tl-tools-grp { display: flex; width: 100%; }
+  .tl-tools-grp > .btn { flex: 1 1 0; }
 }
 
 .code-block { margin: 10px 0; padding: 10px 12px; max-height: 340px; overflow: auto; background: var(--surface2); border: 2px solid var(--line); font-size: 12px; line-height: 1.5; tab-size: 2; }
