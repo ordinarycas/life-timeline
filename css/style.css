@@ -573,3 +573,66 @@ code { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--
 .tl-opt input { width: 18px; height: 18px; min-height: 0; margin: 0; }
 .tl-opt input:disabled + span { color: var(--muted); }
 @media (max-width: 720px) { .tl-opts { width: 100%; } }
+
+/* ---- 風格：海報（data-skin="poster"）。象牙白底、霧面玻璃、柔焦色暈、細線；與淺色／深色主題各自獨立。列印不套用。 ---- */
+.skin-pick { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: 13px; font-weight: 600; }
+.skin-pick select { width: auto; min-height: 40px; padding: 4px 8px; font-size: 14px; }
+@media screen {
+  :root[data-skin="poster"] {
+    --bg: #f8f4ea; --bg2: #f0ebdd; --surface: rgba(255, 255, 255, 0.72); --surface2: rgba(255, 250, 240, 0.85);
+    --ink: #2d3047; --muted: #565a74; --line: rgba(60, 66, 90, 0.3); --grid: rgba(60, 66, 90, 0.16);
+    --accent: #1f6f7a; --coin: #ffd35c; --glass: rgba(255, 255, 255, 0.66);
+    --shadow: 0 10px 30px rgba(80, 90, 120, 0.14);
+    --k-stage: #8fd6e0; --k-work: #a9e0bf; --k-license: #ffb08f; --k-exam: #cbbdf2; --k-retire: #e48a8a; --k-service: #ff9a9a;
+    --k-risk: #f7bcd5; --k-kids: #ffd98a; --k-money: #9ccbf2; --k-health: #d3e87a; --k-explore: #ecdca6;
+    --seg-walked: #dde2ec; --seg-work: #b6e3c8; --seg-retired: #ffdcae;
+  }
+  :root[data-skin="poster"][data-theme="dark"] {
+    --bg: #171c2c; --bg2: #1e2437; --surface: rgba(42, 49, 74, 0.7); --surface2: rgba(52, 60, 90, 0.8);
+    --ink: #f4f1fa; --muted: #bcc2da; --line: rgba(190, 200, 235, 0.32); --grid: rgba(190, 200, 235, 0.16);
+    --accent: #7fe0e0; --glass: rgba(42, 49, 74, 0.62); --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    --seg-walked: #3d4668; --seg-work: #2f6f5b; --seg-retired: #7d5a3c;
+  }
+}
+@media screen and (prefers-color-scheme: dark) {
+  :root[data-skin="poster"]:not([data-theme]) {
+    --bg: #171c2c; --bg2: #1e2437; --surface: rgba(42, 49, 74, 0.7); --surface2: rgba(52, 60, 90, 0.8);
+    --ink: #f4f1fa; --muted: #bcc2da; --line: rgba(190, 200, 235, 0.32); --grid: rgba(190, 200, 235, 0.16);
+    --accent: #7fe0e0; --glass: rgba(42, 49, 74, 0.62); --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    --seg-walked: #3d4668; --seg-work: #2f6f5b; --seg-retired: #7d5a3c;
+  }
+}
+@media screen {
+  :root[data-skin="poster"] body {
+    background:
+      radial-gradient(520px 380px at 4% 6%, rgba(142, 214, 224, 0.42), transparent 70%),
+      radial-gradient(560px 420px at 96% 4%, rgba(203, 189, 242, 0.4), transparent 70%),
+      radial-gradient(620px 460px at 90% 96%, rgba(169, 224, 191, 0.38), transparent 70%),
+      radial-gradient(520px 400px at 40% 60%, rgba(255, 217, 168, 0.3), transparent 70%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+  :root[data-skin="poster"][data-theme="dark"] body { background:
+      radial-gradient(520px 380px at 4% 6%, rgba(60, 130, 150, 0.35), transparent 70%),
+      radial-gradient(560px 420px at 96% 4%, rgba(110, 90, 170, 0.35), transparent 70%),
+      radial-gradient(620px 460px at 90% 96%, rgba(60, 130, 100, 0.3), transparent 70%), var(--bg); background-attachment: fixed; }
+  :root[data-skin="poster"] .brand-name { letter-spacing: 0.26em; text-transform: uppercase; font-weight: 600; }
+  :root[data-skin="poster"] .brand-mark { border-width: 1px; border-radius: 50%; box-shadow: none; }
+  :root[data-skin="poster"] .btn,
+  :root[data-skin="poster"] input[type="date"], :root[data-skin="poster"] input[type="number"], :root[data-skin="poster"] input[type="url"], :root[data-skin="poster"] select {
+    border-width: 1px; border-radius: 12px; box-shadow: none;
+  }
+  :root[data-skin="poster"] .btn { backdrop-filter: blur(10px); }
+  :root[data-skin="poster"] .btn:active { transform: none; }
+  :root[data-skin="poster"] .card, :root[data-skin="poster"] .tagcard, :root[data-skin="poster"] .player, :root[data-skin="poster"] .banner,
+  :root[data-skin="poster"] .curve, :root[data-skin="poster"] .water-fig, :root[data-skin="poster"] .kpi > div, :root[data-skin="poster"] .group, :root[data-skin="poster"] .code-block,
+  :root[data-skin="poster"] .stage-map, :root[data-skin="poster"] .lv-seg, :root[data-skin="poster"] .xbtn, :root[data-skin="poster"] .wf-tip {
+    border-width: 1px; border-radius: 18px; box-shadow: var(--shadow); backdrop-filter: blur(16px) saturate(1.15);
+  }
+  :root[data-skin="poster"] .group, :root[data-skin="poster"] .kpi > div, :root[data-skin="poster"] .code-block, :root[data-skin="poster"] .lv-seg, :root[data-skin="poster"] .xbtn { box-shadow: none; border-radius: 12px; }
+  :root[data-skin="poster"] .chances li, :root[data-skin="poster"] .verdict { border-width: 1px; border-left-width: 6px; border-radius: 12px; }
+  :root[data-skin="poster"] .chip, :root[data-skin="poster"] .income-group .badge, :root[data-skin="poster"] .toast { border-width: 1px; border-radius: 999px; }
+  :root[data-skin="poster"] .bar, :root[data-skin="poster"] .seg, :root[data-skin="poster"] .wf-bar { border-width: 1px; border-radius: 12px; }
+  :root[data-skin="poster"] .tagcard .body { border-top-style: solid; border-top-width: 1px; }
+  :root[data-skin="poster"] h1, :root[data-skin="poster"] h2 { letter-spacing: 0.04em; font-weight: 600; }
+}

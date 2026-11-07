@@ -4,4 +4,5 @@ try {
   var t = p && p.theme;
   document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
   if (t === 'auto') document.documentElement.removeAttribute('data-theme');
+  document.documentElement.setAttribute('data-skin', p && p.skin === 'poster' ? 'poster' : 'pixel');
 } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }

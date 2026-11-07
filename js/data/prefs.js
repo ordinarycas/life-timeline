@@ -12,7 +12,7 @@ export const HINTS_KEY = 'ltl.hints.v1';
 
 export const DEFAULTS = Object.freeze({
   sex: '', birth: '', have: [], retire: 65, start: 0, kid: false, kidAge: 30, useAdv: false, loans: [], mortgage: null, health: false,
-  wage: 'current', monthly: 0, service: 'auto', serviceAge: 22, serviceType: 'regular', music: 'off', musicUrl: '', theme: 'light',
+  wage: 'current', monthly: 0, service: 'auto', serviceAge: 22, serviceType: 'regular', music: 'off', musicUrl: '', theme: 'light', skin: 'pixel',
   assetCash: 0, assetInvest: 0, assetOther: 0, debt: 0, debtInterest: 0, expense: 0,
 });
 
@@ -90,6 +90,7 @@ export function validateField(key, raw, { todayIso, musicIds = [] } = {}) {
     case 'music': return raw === 'off' || raw === 'custom' || musicIds.includes(raw) ? ok(raw) : bad('找不到這首歌');
     case 'musicUrl': { if (raw === '' || raw == null) return ok(''); const id = parseYoutubeId(raw); return id ? ok(watchUrl(id)) : bad('這不是有效的 YouTube 網址'); }
     case 'theme': return ['light', 'dark', 'auto'].includes(raw) ? ok(raw) : bad('請選擇主題');
+    case 'skin': return ['pixel', 'poster'].includes(raw) ? ok(raw) : bad('請選擇風格');
     default: return bad('未知的欄位');
   }
 }

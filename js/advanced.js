@@ -1,6 +1,6 @@
 // 進階頁：匯入由 Excel 轉出的 JSON（生活支出月平均 + 借款利息），顯示摘要；資料只存在這個瀏覽器。
 import { h, clear } from './ui/dom.js';
-import { applyTheme } from './ui/theme.js';
+import { applyTheme, applySkin } from './ui/theme.js';
 import { money } from './core/format.js';
 import { todayTaipei } from './core/clock.js';
 import { LOAN_TYPES, parseAdvanced, loadAdvanced, loadAdvancedRaw, saveAdvanced, clearAdvanced, advancedSummary } from './core/advanced.js';
@@ -178,6 +178,7 @@ $('adv-export').addEventListener('click', () => {
 try {
   const p = JSON.parse(localStorage.getItem('ltl.prefs.v1') || 'null');
   if (p?.theme === 'dark' || p?.theme === 'auto') applyTheme(p.theme);
+  if (p?.skin === 'poster') applySkin('poster');
 } catch { /* 維持預設淺色 */ }
 render();
 renderMarket();

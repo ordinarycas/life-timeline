@@ -10,7 +10,7 @@ import { loadContent, fetchJson } from './data/loader.js';
 import { ageText, years1, money, signedMoney, lvText } from './core/format.js';
 import { BASELINE_WAGE } from './data/wage.js';
 import { h, clear, toast } from './ui/dom.js';
-import { initTheme } from './ui/theme.js';
+import { initTheme, initSkin } from './ui/theme.js';
 import { loadFonts } from './ui/fonts.js';
 import { createTimeline } from './ui/timeline.js';
 import { initTimelineTools } from './ui/timelinetools.js';
@@ -239,8 +239,9 @@ settings = initSettings({
   onClear: (p) => { prefs = p; save(); initThemeApply(); render(); },
 });
 
-function initThemeApply() { document.documentElement.setAttribute('data-theme', 'light'); $('theme-toggle').textContent = '主題：淺色'; }
+function initThemeApply() { document.documentElement.setAttribute('data-theme', 'light'); document.documentElement.setAttribute('data-skin', 'pixel'); $('skin-select').value = 'pixel'; $('theme-toggle').textContent = '主題：淺色'; }
 initTheme($('theme-toggle'), prefs.theme, (t) => { prefs = { ...prefs, theme: t }; save(); render(); });
+initSkin($('skin-select'), prefs.skin, (v) => { prefs = { ...prefs, skin: v }; save(); render(); });
 initPlayer($('player'), prefs, (patch) => { prefs = { ...prefs, ...patch }; save(); }, { collapsed: !!hints.playerCollapsed, onCollapse: (v) => setHint('playerCollapsed', v) });
 initHints($('landscape-hint'), $('landscape-ok'), hints, setHint);
 initInstall($('install-app'), $('ios-install'));

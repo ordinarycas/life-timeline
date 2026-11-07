@@ -8,6 +8,16 @@ export function applyTheme(theme) {
   else root.removeAttribute('data-theme');
 }
 
+/** 風格：pixel（像素／RPG，預設）或 poster（海報：象牙白、霧面玻璃）。與淺色／深色主題各自獨立。 */
+export const SKINS = Object.freeze([['pixel', '像素'], ['poster', '海報']]);
+export function applySkin(skin) { document.documentElement.setAttribute('data-skin', skin === 'poster' ? 'poster' : 'pixel'); }
+export function initSkin(select, current, onChange) {
+  select.replaceChildren(...SKINS.map(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; return o; }));
+  select.value = current === 'poster' ? 'poster' : 'pixel';
+  applySkin(select.value);
+  select.addEventListener('change', () => { applySkin(select.value); onChange(select.value); });
+}
+
 export function nextTheme(t) { return ORDER[(ORDER.indexOf(t) + 1) % ORDER.length]; }
 
 export function initTheme(btn, current, onChange) {
