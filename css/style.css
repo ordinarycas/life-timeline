@@ -563,3 +563,10 @@ code { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--
 /* 職涯／人生探索：金色、不顯眼（不畫「進行中」的粗框、框線用較淡的顏色） */
 .bar.quiet { border-color: var(--muted); }
 .bar.quiet.is-now { box-shadow: none; }
+
+.tl-opts { align-items: center; gap: 6px 10px; flex-wrap: wrap; font-size: 13px; }
+.tl-opts-title { color: var(--muted); }
+.tl-opt { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+.tl-opt input { width: 18px; height: 18px; min-height: 0; margin: 0; }
+.tl-opt input:disabled + span { color: var(--muted); }
+@media (max-width: 720px) { .tl-opts { width: 100%; } }

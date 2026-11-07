@@ -2,6 +2,8 @@
 import { toast } from './dom.js';
 import { fontsReady } from './fonts.js';
 import { drawTimelineImage, canvasBlob } from './timelineimage.js';
+import { drawCurveSection, drawAssetsSection, drawPromoSection, composeSections } from './imagesections.js';
+import { shareUrl } from '../data/site.js';
 
 const FILE = 'life-timeline.png';
 
@@ -9,14 +11,21 @@ const FILE = 'life-timeline.png';
  * @param {{timeline:object, els:{zoomIn:HTMLElement, zoomOut:HTMLElement, zoomReset:HTMLElement, share:HTMLElement, download:HTMLElement, print:HTMLElement, sheet:HTMLElement, img:HTMLImageElement, title:HTMLElement, sub:HTMLElement}}} o
  * @returns {{onZoom:(z:number)=>void}}
  */
-export function initTimelineTools({ timeline, els }) {
+export function initTimelineTools({ timeline, els, getExtras = () => ({}), initial = {}, onOpt = () => {} }) {
   const busy = (btn, on) => { btn.disabled = on; };
 
   async function makeCanvas() {
     const model = timeline.model;
     if (!model) throw new Error('no model');
     await fontsReady();
-    return drawTimelineImage(model, { title: els.title.textContent, sub: els.sub.textContent });
+    const base = drawTimelineImage(model, { title: els.title.textContent, sub: els.sub.textContent });
+    // 使用者勾選的附加內容：累積收入曲線、資產與負債（沒有資料的選項是停用的，不會畫）
+    const ex = getExtras();
+    const sections = [];
+    if (els.optCurve.checked && !els.optCurve.disabled && ex.curve) sections.push(await drawCurveSection(ex.curve));
+    if (els.optAssets.checked && !els.optAssets.disabled && ex.assets) sections.push(drawAssetsSection(ex.assets));
+    sections.push(drawPromoSection({ url: shareUrl() })); // 最下方一律附上網站簡介與網址
+    return composeSections(base, sections);
   }
   function saveBlob(blob) {
     const url = URL.createObjectURL(blob);
@@ -50,8 +59,25 @@ export function initTimelineTools({ timeline, els }) {
     print();
   }));
 
+  els.optCurve.checked = !!initial.curve;
+  els.optAssets.checked = !!initial.assets;
+  els.optCurve.addEventListener('change', () => onOpt('curve', els.optCurve.checked));
+  els.optAssets.addEventListener('change', () => onOpt('assets', els.optAssets.checked));
+  const setAvail = (box, ok, label, why) => {
+    box.disabled = !ok;
+    box.closest('label').title = ok ? '' : why;
+    box.closest('label').querySelector('span').textContent = ok ? label : `${label}（${why}）`;
+  };
+
   els.zoomIn.addEventListener('click', () => timeline.zoomBy(1.25));
   els.zoomOut.addEventListener('click', () => timeline.zoomBy(1 / 1.25));
   els.zoomReset.addEventListener('click', () => timeline.zoomReset());
-  return { onZoom: (z) => { els.zoomReset.textContent = `${Math.round(z * 100)}%`; } };
+  return {
+    onZoom: (z) => { els.zoomReset.textContent = `${Math.round(z * 100)}%`; },
+    /** 目前有沒有資料可以放進圖片。 */
+    setAvailable({ curve, assets }) {
+      setAvail(els.optCurve, curve, '累積收入曲線', '目前沒有可畫的收入');
+      setAvail(els.optAssets, assets, '資產與負債', '還沒填資產、借款或支出');
+    },
+  };
 }

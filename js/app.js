@@ -58,9 +58,15 @@ const timeline = createTimeline({
   onJump: (id) => jumpToTag(id),
   onZoom: (z) => tools?.onZoom(z),
 });
+let lastCurve = null; // 圖片附上的內容：目前的曲線參數與資產結果（沒有資料就是 null）
+let lastAssets = null;
 const tools = initTimelineTools({
   timeline,
+  getExtras: () => ({ curve: lastCurve, assets: lastAssets }),
+  initial: { curve: !!hints.imgCurve, assets: !!hints.imgAssets },
+  onOpt: (k, v) => setHint(k === 'curve' ? 'imgCurve' : 'imgAssets', v),
   els: {
+    optCurve: $('tl-opt-curve'), optAssets: $('tl-opt-assets'),
     zoomIn: $('tl-zoom-in'), zoomOut: $('tl-zoom-out'), zoomReset: $('tl-zoom-reset'), share: $('tl-share'), download: $('tl-download'), print: $('tl-print-img'),
     img: $('print-img'), title: $('stage-title'), sub: $('stage-sub'),
   },
@@ -78,6 +84,7 @@ function drawInfo() {
 const item = (label, value, sub, cls = '') => h('div', { class: cls }, h('dt', { text: label }), h('dd', {}, value, sub ? h('span', { class: 'sub', text: sub }) : null));
 
 function drawResults() {
+  lastCurve = null; lastAssets = null;
   $('results').hidden = model.demo;
   if (model.demo) return;
   const { inc, base, late, kid, monthly } = kpi;
@@ -123,14 +130,18 @@ function drawResults() {
     if (rem.remainingMonths > 0) { lt.principal += rem.balance; lt.interest += rem.interest; lt.monthly += rem.monthly; }
   }
   const assetPrefs = lt.principal > 0 ? { ...base0, debt: base0.debt + lt.principal, debtInterest: base0.debtInterest + lt.interest } : base0;
-  if (hasAssetInput(assetPrefs)) renderAssets(assetEls, computeAssets({ income: inc.income, lifeMonths: inc.lifeMonths, monthly }, assetPrefs), monthly, useAdv, lt.principal > 0 ? lt : null);
-  else hideAssets(assetEls);
+  if (hasAssetInput(assetPrefs)) {
+    const result = computeAssets({ income: inc.income, lifeMonths: inc.lifeMonths, monthly }, assetPrefs);
+    renderAssets(assetEls, result, monthly, useAdv, lt.principal > 0 ? lt : null);
+    lastAssets = { a: result, monthly, fromAdv: useAdv, loans: lt.principal > 0 ? lt : null };
+  } else hideAssets(assetEls);
   // 曲線
   const can = monthly > 0 && inc.stopAge > model.age;
   $('curve-box').hidden = !can; $('curve-table-wrap').hidden = !can; $('curve-empty').hidden = can;
   if (can) {
     const todayYm = todayTaipei().slice(0, 7);
     const cp = adv ? { ...kpi.curve, todayYm, adv: { data: adv, todayYm } } : { ...kpi.curve, todayYm };
+    lastCurve = cp;
     renderCurve($('curve'), cp).catch(() => { $('curve-empty').hidden = false; $('curve-empty').textContent = '圖表載入失敗，請看下方表格。'; });
     curveTable($('curve-table'), cp);
   } else destroyCurve();
@@ -217,6 +228,7 @@ function render() {
   renderIncome($('income-list'), $('income-lead'), prefs.have);
   renderDetails($('details-list'), $('general-sources'), model);
   drawResults();
+  tools.setAvailable({ curve: !!lastCurve, assets: !!lastAssets });
   settings?.summary(model, kpi.monthly);
 }
 

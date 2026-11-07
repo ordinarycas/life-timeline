@@ -6,7 +6,7 @@ import { BANDS, bandText } from '../data/bands.js';
 import { KIND_VAR } from './timeline.js';
 import { laneItems, lanePlan } from '../core/placement.js';
 
-const FONT = '"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,-apple-system,"Segoe UI",sans-serif';
+export const FONT = '"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,-apple-system,"Segoe UI",sans-serif';
 const C = {
   page: '#ffffff', panel: '#e9f7f4', panel2: '#fff0e4', ink: '#2d3047', muted: '#565a74', grid: '#b9ddd8', focus: '#c2255c', coin: '#ffc857', past: '#626779',
   seg: { walked: '#d5dce8', work: '#99d8b9', retired: '#ffd9a8' },

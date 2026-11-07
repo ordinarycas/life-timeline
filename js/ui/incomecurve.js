@@ -89,9 +89,7 @@ const markers = {
 };
 
 /** @param {{monthly:number,startAge:number,stopAge:number,xFrom:number,xTo:number}} p */
-export async function renderCurve(canvas, p) {
-  const Chart = await loadChart();
-  const pal = palette();
+function buildConfig(p, pal, printing) {
   const data = incomeSeries({ monthly: p.monthly, startAge: p.startAge, stopAge: p.stopAge }, p.xFrom, p.xTo, MONTHLY);
   const datasets = [{ label: `從現在開始（月收入 ${money(p.monthly)}）`, data, borderColor: pal.line, backgroundColor: pal.line, borderWidth: 3, pointRadius: 0, pointHoverRadius: 4, fill: false }];
   if (p.base) {
@@ -125,6 +123,12 @@ export async function renderCurve(canvas, p) {
     },
     plugins: [markers],
   };
+  return base;
+}
+
+export async function renderCurve(canvas, p) {
+  const Chart = await loadChart();
+  const base = buildConfig(p, palette(), printing);
   if (chart) { chart.destroy(); chart = null; }
   chart = new Chart(canvas, base);
   if (printing) setPrintMode(true);
@@ -157,4 +161,22 @@ export function curveTable(tableEl, p) {
   if (p.adv) head.append(th('扣除生活支出與每月還款（本金＋利息）後（進階，NT$）'));
   const body = rows.map((d) => { const tr = document.createElement('tr'); tr.append(td(ageText(d.x)), td(money(d.y))); if (base) tr.append(td(money(d.b))); if (p.expense > 0) tr.append(td(money(d.n))); if (p.adv) tr.append(td(money(advancedNet(p.adv.data, p.adv.todayYm, p.today, d.x, d.y, { withPrincipal: true })))); return tr; });
   tableEl.replaceChildren(head, ...body);
+}
+
+/**
+ * 圖片用：在畫面外畫一張淺色、固定尺寸的曲線（不受目前分頁是否顯示、深淺色主題影響），回傳 canvas（像素是 width×2、height×2）。
+ */
+export async function renderCurveImage(p, width = 960, height = 420) {
+  const Chart = await loadChart();
+  const canvas = document.createElement('canvas');
+  canvas.width = width; canvas.height = height;
+  const cfg = buildConfig(p, PRINT_PAL, true);
+  Object.assign(cfg.options, { responsive: false, animation: false, devicePixelRatio: 2, font: { family: '"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,sans-serif' } });
+  const c = new Chart(canvas, cfg);
+  c.update('none');
+  const out = document.createElement('canvas');
+  out.width = canvas.width; out.height = canvas.height;
+  out.getContext('2d').drawImage(canvas, 0, 0); // destroy 會清掉原本的畫布，先複製
+  c.destroy();
+  return out;
 }
